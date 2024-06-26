@@ -46,7 +46,7 @@ public class BishopMoveTests {
                 new int[][]{
                         {6, 3}, {7, 4},
                         {4, 3}, {3, 4}, {2, 5},
-                        // none
+                        // none (this is 4,1)
                         {6, 1},
                 }
         );

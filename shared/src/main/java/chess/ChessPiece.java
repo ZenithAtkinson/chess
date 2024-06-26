@@ -12,7 +12,12 @@ import java.util.Collection;
  */
 public class ChessPiece {
 
+    private final ChessGame.TeamColor pieceColor;
+    private final PieceType type;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        this.pieceColor = pieceColor;
+        this.type = type;
     }
 
     /**
@@ -31,14 +36,14 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        throw new RuntimeException("Not implemented");
+        return pieceColor;
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        throw new RuntimeException("Not implemented");
+        return type;
     }
 
     /**
@@ -49,6 +54,29 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return new ArrayList<>(); //TEMPORARY
+        //Looking for all valid moves for a given piece.
+            //When finding valid positions, DONT add a spot where a team piece is, but DO add a spot where an enemy piece is (as technically it is a capture)
+
+        return new ArrayList<>(); //TEMPORARY, needs to be full of the ChessMove class.
+
     }
+
+    public Collection<ChessMove> KingMovesCalculator(ChessBoard board, ChessPosition myPosition) {
+        new ArrayList<>();
+
+        //Add the surrounding spaces to the king based on its position, IF they are valid (not taken up by a teammate).
+            //Spots occupied by an enemy ARE valid, but spots beyond it are NOT.
+
+        return ArrayList<>();
+    }
+
+    public Collection<ChessMove> QueenMovesCalculator(ChessBoard board, ChessPosition myPosition) { }
+
+    public Collection<ChessMove> KnightMovesCalculator(ChessBoard board, ChessPosition myPosition) { }
+
+    public Collection<ChessMove> PawnMovesCalculator(ChessBoard board, ChessPosition myPosition) { }
+
+    public Collection<ChessMove> BishopMovesCalculator(ChessBoard board, ChessPosition myPosition) { }
+
+    public Collection<ChessMove> RookMovesCalculator(ChessBoard board, ChessPosition myPosition) { }
 }
