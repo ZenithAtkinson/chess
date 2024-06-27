@@ -55,7 +55,13 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         //Looking for all valid moves for a given piece.
-            //When finding valid positions, DONT add a spot where a team piece is, but DO add a spot where an enemy piece is (as technically it is a capture)
+        //When finding valid positions, DONT add a spot where a team piece is, but DO add a spot where an enemy piece is (as technically it is a capture)
+
+        //First check for piece type (from board, given position)
+        //Call appropriate function ( see below)
+        //Return valid moves, then return whatever the function returns (so return whatever KingMovesCalcualor returns)
+        //return KingMovesCalculator(board, position)
+
 
         return new ArrayList<>(); //TEMPORARY, needs to be full of the ChessMove class.
 
@@ -65,7 +71,7 @@ public class ChessPiece {
         new ArrayList<>();
 
         //Add the surrounding spaces to the king based on its position, IF they are valid (not taken up by a teammate).
-            //Spots occupied by an enemy ARE valid, but spots beyond it are NOT.
+        //Spots occupied by an enemy ARE valid, but spots beyond it are NOT.
 
         return ArrayList<>();
     }
