@@ -78,8 +78,11 @@ public class ChessPiece {
             //System.out.println("This is a Pawn");
             return (PawnMovesCalculator(board, piece_row, piece_column));
         } else if (given_piece.getPieceType() == PieceType.QUEEN) {
-            System.out.println("This is a Queen");
+            //System.out.println("This is a Queen");
             return (QueenMovesCalculator(board, piece_row, piece_column));
+        } else if (given_piece.getPieceType() == PieceType.ROOK) {
+            //System.out.println("This is a Rook");
+            return (RookMovesCalculator(board, piece_row, piece_column));
         }
 
         //First check for piece type (from board, given position)
@@ -248,7 +251,6 @@ public class ChessPiece {
         ChessMove new_move;
         ChessGame.TeamColor PawnColor = board.getPiece(start_position).getTeamColor();
         boolean starter;
-        new_position = new ChessPosition(row,col);
 
         if (PawnColor == WHITE) {
             //Check for point right ahead
@@ -258,13 +260,23 @@ public class ChessPiece {
                 PromotionPawnAdder(diagonal, validMoves, board, start_position, row + 2, col, PawnColor);
             }
             //check for enemy at diagonals
-            if (EnemyPosition(board,row+1, col+1, WHITE)) {
+            if (col == 8){ //need to take into account that subtracting/adding one can take it off the map.
+                if (EnemyPosition(board,row+1, col, WHITE)) {
+                    diagonal = true;
+                    PromotionPawnAdder(diagonal, validMoves, board, start_position, row+1, col, PawnColor);
+                }
+            } else if (EnemyPosition(board,row+1, col+1, WHITE)) {
                 diagonal = true;
                 PromotionPawnAdder(diagonal, validMoves, board, start_position, row+1, col+1, PawnColor);
             }
-            if (EnemyPosition(board,row+1, col-1, WHITE)) {
-                diagonal = true;
-                PromotionPawnAdder(diagonal, validMoves, board, start_position, row+1, col-1, PawnColor);
+            if (col == 1){ //need to take into account that subtracting/adding one can take it off the map.
+                if (EnemyPosition(board,row+1, col, WHITE)) {
+                    diagonal = true;
+                    PromotionPawnAdder(diagonal, validMoves, board, start_position, row+1, col, PawnColor);
+                }
+            } else if (EnemyPosition(board,row+1, col-1, WHITE)) {
+                    diagonal = true;
+                    PromotionPawnAdder(diagonal, validMoves, board, start_position, row+1, col-1, PawnColor);
             }
         }
 
@@ -278,11 +290,21 @@ public class ChessPiece {
             }
         }
             //check for enemy at diagonals
-            if (EnemyPosition(board,row-1, col+1, BLACK)) {
+            if (col == 8){ //need to take into account that subtracting/adding one can take it off the map.
+                if (EnemyPosition(board,row-1, col, BLACK)) {
+                    diagonal = true;
+                    PromotionPawnAdder(diagonal, validMoves, board, start_position, row-1, col, PawnColor);
+                }
+            } else if (EnemyPosition(board,row-1, col+1, BLACK)) {
                 diagonal = true;
                 PromotionPawnAdder(diagonal, validMoves, board, start_position, row-1, col+1, PawnColor);
             }
-            if (EnemyPosition(board,row-1, col-1, BLACK)) {
+            if (col == 1){ //need to take into account that subtracting/adding one can take it off the map.
+                if (EnemyPosition(board,row-1, col, BLACK)) {
+                diagonal = true;
+                PromotionPawnAdder(diagonal, validMoves, board, start_position, row-1, col, PawnColor);
+            }
+        } else if (EnemyPosition(board,row-1, col-1, BLACK)) {
                 diagonal = true;
                 PromotionPawnAdder(diagonal, validMoves, board, start_position, row-1, col-1, PawnColor);
             }
@@ -305,11 +327,15 @@ public class ChessPiece {
         return validMoves;
     }
 
+    public Collection<ChessMove> RookMovesCalculator(ChessBoard board, int row, int col) {
+        Collection<ChessMove> validMoves = new ArrayList<>();
+        ChessPosition start_position = new ChessPosition(row, col);
+        ChessGame.TeamColor QueenColor = board.getPiece(start_position).getTeamColor();
 
-    /*
-    public Collection<ChessMove> RookMovesCalculator(ChessBoard board, ChessPosition myPosition) { }
-     */
-
+        //loop for all directoins in lines, adding moves as you go
+        addDirectionalMoves(validMoves, board, start_position, row, col, QueenColor);
+        return validMoves;
+    }
 
     private static boolean BoolValidPosition(int row, int col) {
         return row >= 1 && row <= 8 && col >= 1 && col <= 8;
@@ -452,7 +478,7 @@ public class ChessPiece {
         ChessPosition new_position;
 
         //straight up)
-        while ((new_row < 8) && (new_col < 8)){
+        while ((new_row < 8)){
             new_row++;
             new_position = new ChessPosition(new_row, new_col);
             new_piece = board.getPiece(new_position);
@@ -472,8 +498,8 @@ public class ChessPiece {
         new_col = col;
 
         //straight right
-        while ((new_row != 0) && (new_col < 8)){
-            if (new_row != 1) {new_row--;}
+        while (new_col < 8){
+            new_col++;
             new_position = new ChessPosition(new_row, new_col);
             new_piece = board.getPiece(new_position);
 
@@ -493,8 +519,8 @@ public class ChessPiece {
         new_col = col;
 
         //straight down
-        while ((new_row != 0) && (new_col != 0)){
-            if (new_row != 1) {new_row--;} //The directions are totally messed up, review the 0's and 8's
+        while (new_row != 1){
+            new_row--; //The directions are totally messed up, review the 0's and 8's
 
             new_position = new ChessPosition(new_row, new_col);
             new_piece = board.getPiece(new_position);
@@ -502,7 +528,7 @@ public class ChessPiece {
             if (new_piece == null || new_piece.getTeamColor()!=color){
                 new_move = new ChessMove(start_position, new_position, null);
                 validMoves.add(new_move);
-                if (new_piece != null && new_piece.getTeamColor()!=color){ //break if we are on an opponet piece
+                if (new_piece != null && new_piece.getTeamColor()!=color){ //break if we are on an opponent piece
                     break;
                 }
             }
@@ -515,9 +541,8 @@ public class ChessPiece {
         new_col = col;
 
         //straight left
-        while ((new_row != 0) && (new_col != 0)){
-            if (new_row != 1) {new_row--;}
-            if (new_col != 1) {new_col--;}
+        while (new_col != 1){
+            new_col--;
             new_position = new ChessPosition(new_row, new_col);
             new_piece = board.getPiece(new_position);
             if (new_piece == null || new_piece.getTeamColor()!=color){
