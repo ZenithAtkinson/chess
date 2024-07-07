@@ -70,7 +70,6 @@ public class ChessBoard {
         for (int i = 0; i <= 7; i++){
             squares[1][i] = new ChessPiece(ChessGame.TeamColor.WHITE, PAWN);
         }
-
         squares[7][0] = new ChessPiece(ChessGame.TeamColor.BLACK, ROOK);
         squares[7][1] = new ChessPiece(ChessGame.TeamColor.BLACK, KNIGHT);
         squares[7][2] = new ChessPiece(ChessGame.TeamColor.BLACK, BISHOP);
