@@ -13,6 +13,7 @@ import java.util.Collection;
 public class ChessGame {
     private ChessBoard board;
     private TeamColor currentTurn;
+    private ChessPosition kingPosition;
 
     public ChessGame() {
         this.board = new ChessBoard();
@@ -52,6 +53,8 @@ public class ChessGame {
      */
     //validMoves: Takes as input a position on the chessboard and returns all moves the piece there can legally make. If there is no piece at that location, this method returns null.
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        //Wil lcall the "isinCheck" functions
+
         ChessPiece piece = board.getPiece(startPosition);
         if (piece == null) {
             return null; //Invalid move exception(?)
@@ -61,26 +64,12 @@ public class ChessGame {
 
         for (ChessMove move : allMoves) {
             //For TA's: how does this method work with makeMove?
-            if (isMoveLegal(move)) {
+            if (isMoveLegal(move)) { //valid moves is checking if it leads to a check/checkmate
                 validMoves.add(move);
             }
         }
 
         return validMoves;
-    }
-
-
-    private boolean isMoveLegal(ChessMove move){
-        //Make a move?
-        ChessPiece capturedPiece = board.getPiece(move.getEndPosition());
-        board.makeMove(move);
-
-        boolean isLegal = !isInCheck(move.getPiece().getColor());
-
-        //DO I need to undo the move?
-        //board.undoMove(move, capturedPiece);
-
-        return isLegal;
     }
 
     /**
@@ -91,6 +80,10 @@ public class ChessGame {
      */
     //makeMove: Receives a given move and executes it, provided it is a legal move. If the move is illegal, it throws an InvalidMoveException. A move is illegal if the chess piece cannot move there, if the move leaves the team’s king in danger, or if it’s not the corresponding team's turn.
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        //adheres to the possible moves from ChessPiece, but also checks for Check and Checkmate.
+        //Will only work if given a possible move.
+
+        //This function should call ValidMoves, NOT the other way around.
         throw new RuntimeException("Not implemented");
     }
 
@@ -103,8 +96,25 @@ public class ChessGame {
     //isInCheck: Returns true if the specified team’s King could be captured by an opposing piece.
     public boolean isInCheck(TeamColor teamColor) {
         //Do I need a separate method to get the king based on the teamcolor? or can I change the parameters?
-        throw new RuntimeException("Not implemented");
+        ChessPosition kingPosition = getKingPosition(teamColor);
+        ////Need to loop through ALL positions
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(row + 1, col + 1));
+
+                if (piece != null && piece.getTeamColor() != teamColor) { //Given piece is opposite color
+                    Collection<ChessMove> moves = piece.pieceMoves(board, new ChessPosition(row + 1, col + 1));
+                    for (ChessMove move : moves) {
+                        if (move.getEndPosition().equals(kingPosition)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
+
 
     /**
      * Determines if the given team is in checkmate
@@ -114,7 +124,21 @@ public class ChessGame {
      */
     //isInCheckmate: Returns true if the given team has no way to protect their king from being captured.
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        //Accesses the same mechanic as Stalement
+        //Youre in check, and there are no valid moves
+
+        if (isInCheck(teamColor)){//Check if in check
+            return false;
+        }
+        ChessPiece king = board.getPiece(kingPosition);
+        Collection<ChessMove> kingMoves = king.pieceMoves(board, kingPosition);
+        //Check if the king has NO valid moves.
+        if (ChessMove move : kingMoves){
+            //For each of the moves the king has, check if when the king is at the end_position of a given move if it is in check.
+            //We can't have a parameter for a position or move into isInCheck(), so we need to just move the piece, and then check from the board if it is in Check.
+
+        }
+
     }
 
     /**
@@ -124,8 +148,11 @@ public class ChessGame {
      * @param teamColor which team to check for stalemate
      * @return True if the specified team is in stalemate, otherwise false
      */
+
     //isInStalemate: Returns true if the given team has no legal moves but their king is not in immediate danger.
     public boolean isInStalemate(TeamColor teamColor) {
+        //Accesses the same mechanic as Checkmate
+        //Youre not in check, but there are no valid moves.
         throw new RuntimeException("Not implemented");
     }
 
@@ -136,9 +163,8 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         throw new RuntimeException("Not implemented");
+        //set board to a clone of previous board (with modifications)
     }
-
-
 
     /**
      * Gets the current chessboard
@@ -147,6 +173,53 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+
+    private ChessPosition getKingPosition(TeamColor king_color) {
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(row + 1, col + 1));
+                if (piece != null && piece.getTeamColor() == king_color && piece.getPieceType() == ChessPiece.PieceType.KING) {
+                    kingPosition = new ChessPosition(row + 1, col + 1);
+                    return new ChessPosition(row + 1, col + 1);
+                }
+            }
+        }
+        System.out.println("No king found in getKingPosition");
+        return null;
+    }
+
+    private void makeTempMove(ChessMove move) {
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        ChessPiece capturedPiece = board.getPiece(move.getEndPosition());
+
+        //Clone the board.
+
+        board.setPiece(move.getEndPosition(), piece);
+        board.setPiece(move.getStartPosition(), null);
+
+        move.setCapturedPiece(capturedPiece); // Store captured piece in the move
+    }
+
+    private void undoTempMove(ChessMove move) {
+        ChessPiece piece = board.getPiece(move.getEndPosition());
+
+        board.setPiece(move.getStartPosition(), piece);
+        board.setPiece(move.getEndPosition(), move.getCapturedPiece());
+    }
+
+    private ChessBoard cloneBoard(ChessBoard originalBoard) { //deep copy of ChessBoard
+        ChessBoard newBoard = new ChessBoard();
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPiece piece = originalBoard.getPiece(new ChessPosition(row + 1, col + 1));
+                if (piece != null) {
+                    newBoard.addPiece(new ChessPosition(row + 1, col + 1), piece);
+                }
+            }
+        }
+        return newBoard;
     }
 
     @Override
