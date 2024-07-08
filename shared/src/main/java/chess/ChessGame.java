@@ -1,5 +1,7 @@
 package chess;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -9,9 +11,12 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
+    private ChessBoard board;
+    private TeamColor currentTurn;
 
     public ChessGame() {
-
+        this.board = new ChessBoard();
+        this.currentTurn = TeamColor.WHITE; //white starts
     }
 
     /**
@@ -45,8 +50,37 @@ public class ChessGame {
      * @return Set of valid moves for requested piece, or null if no piece at
      * startPosition
      */
+    //validMoves: Takes as input a position on the chessboard and returns all moves the piece there can legally make. If there is no piece at that location, this method returns null.
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {
+            return null; //Invalid move exception(?)
+        }
+        Collection<ChessMove> allMoves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> validMoves = new ArrayList<>();
+
+        for (ChessMove move : allMoves) {
+            //For TA's: how does this method work with makeMove?
+            if (isMoveLegal(move)) {
+                validMoves.add(move);
+            }
+        }
+
+        return validMoves;
+    }
+
+
+    private boolean isMoveLegal(ChessMove move){
+        //Make a move?
+        ChessPiece capturedPiece = board.getPiece(move.getEndPosition());
+        board.makeMove(move);
+
+        boolean isLegal = !isInCheck(move.getPiece().getColor());
+
+        //DO I need to undo the move?
+        //board.undoMove(move, capturedPiece);
+
+        return isLegal;
     }
 
     /**
@@ -55,6 +89,7 @@ public class ChessGame {
      * @param move chess move to preform
      * @throws InvalidMoveException if move is invalid
      */
+    //makeMove: Receives a given move and executes it, provided it is a legal move. If the move is illegal, it throws an InvalidMoveException. A move is illegal if the chess piece cannot move there, if the move leaves the team’s king in danger, or if it’s not the corresponding team's turn.
     public void makeMove(ChessMove move) throws InvalidMoveException {
         throw new RuntimeException("Not implemented");
     }
@@ -65,7 +100,9 @@ public class ChessGame {
      * @param teamColor which team to check for check
      * @return True if the specified team is in check
      */
+    //isInCheck: Returns true if the specified team’s King could be captured by an opposing piece.
     public boolean isInCheck(TeamColor teamColor) {
+        //Do I need a separate method to get the king based on the teamcolor? or can I change the parameters?
         throw new RuntimeException("Not implemented");
     }
 
@@ -75,6 +112,7 @@ public class ChessGame {
      * @param teamColor which team to check for checkmate
      * @return True if the specified team is in checkmate
      */
+    //isInCheckmate: Returns true if the given team has no way to protect their king from being captured.
     public boolean isInCheckmate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
     }
@@ -86,6 +124,7 @@ public class ChessGame {
      * @param teamColor which team to check for stalemate
      * @return True if the specified team is in stalemate, otherwise false
      */
+    //isInStalemate: Returns true if the given team has no legal moves but their king is not in immediate danger.
     public boolean isInStalemate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
     }
@@ -99,12 +138,35 @@ public class ChessGame {
         throw new RuntimeException("Not implemented");
     }
 
+
+
     /**
      * Gets the current chessboard
      *
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
 }
