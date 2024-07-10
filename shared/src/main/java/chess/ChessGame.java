@@ -19,6 +19,7 @@ public class ChessGame {
         this.board = new ChessBoard();
         board.resetBoard();
         this.currentTurn = TeamColor.WHITE; //white starts
+
     }
 
     /**
@@ -74,11 +75,13 @@ public class ChessGame {
     }
 
     private boolean isMoveLegal(ChessMove move) {
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        if (piece == null) {
+            return false;
+        }
         ChessBoard tempBoard = cloneBoard(board);
         makeTempmove(tempBoard, move);
-        setBoard(tempBoard);  // Set tempBoard as the current board
-        boolean legal = !isInCheck(currentTurn);
-        setBoard(board);  // Restore the original board
+        boolean legal = !isInCheck(piece.getTeamColor());
         return legal;
     }
 
@@ -105,6 +108,8 @@ public class ChessGame {
             currentTurn = (currentTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
 
             if (isInCheck(piece.getTeamColor())) {
+                board.addPiece(move.getStartPosition(), piece);
+                board.addPiece(move.getEndPosition(), null);
                 throw new InvalidMoveException("Move leaves the king in check (NO NO)");
             }
         }
@@ -128,7 +133,11 @@ public class ChessGame {
                     Collection<ChessMove> moves = piece.pieceMoves(board, new ChessPosition(row + 1, col + 1));
                     for (ChessMove move : moves) {
                         if (move.getEndPosition().equals(kingPosition)) {
+
+                            System.out.println("The "+teamColor.toString()+" king is in check");
                             return true;
+
+
                         }
                     }
                 }
@@ -149,7 +158,7 @@ public class ChessGame {
         //Accesses the same mechanic as Stalement
         //Youre in check, and there are no valid moves
 
-        if (isInCheck(teamColor)){//Check if in check
+        if (!isInCheck(teamColor)){//Check if in check
             return false;
         }
         ChessPosition kingPosition = getKingPosition(teamColor);
@@ -187,7 +196,27 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         //Accesses the same mechanic as Checkmate
         //Youre not in check, but there are no valid moves.
-        throw new RuntimeException("Not implemented");
+        if (isInCheck(teamColor)) {
+            return false;
+        }
+
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(row + 1, col + 1));
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> moves = piece.pieceMoves(board, new ChessPosition(row + 1, col + 1));
+                    for (ChessMove move : moves) {
+                        ChessBoard tempBoard = cloneBoard(board);
+                        makeTempmove(tempBoard, move);
+                        if (!isInCheck(teamColor)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -196,7 +225,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
         //set board to a clone of previous board (with modifications)
     }
 
@@ -214,7 +243,6 @@ public class ChessGame {
             for (int col = 0; col < 8; col++) {
                 ChessPiece piece = board.getPiece(new ChessPosition(row + 1, col + 1));
                 if (piece != null && piece.getTeamColor() == king_color && piece.getPieceType() == ChessPiece.PieceType.KING) {
-                    kingPosition = new ChessPosition(row + 1, col + 1);
                     return new ChessPosition(row + 1, col + 1);
                 }
             }
