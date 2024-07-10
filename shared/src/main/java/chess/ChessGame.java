@@ -130,14 +130,26 @@ public class ChessGame {
         if (isInCheck(teamColor)){//Check if in check
             return false;
         }
+        ChessPosition kingPosition = getKingPosition(teamColor);
         ChessPiece king = board.getPiece(kingPosition);
         Collection<ChessMove> kingMoves = king.pieceMoves(board, kingPosition);
         //Check if the king has NO valid moves.
-        if (ChessMove move : kingMoves){
+
             //For each of the moves the king has, check if when the king is at the end_position of a given move if it is in check.
             //We can't have a parameter for a position or move into isInCheck(), so we need to just move the piece, and then check from the board if it is in Check.
+            for (ChessMove move : kingMoves) {
+                ChessBoard tempBoard = cloneBoard(board);
+                makeTempmove(tempBoard, move);
+                setBoard(tempBoard);  // Set tempBoard as the current board
+                if (!isInCheck(teamColor)) {
+                    setBoard(board);  // Restore the original board
+                    return false;
+                }
+                setBoard(board);  // Restore the original board
+            }
 
-        }
+        // If all moves result in check, return true
+        return true;
 
     }
 
@@ -175,7 +187,6 @@ public class ChessGame {
         return board;
     }
 
-
     private ChessPosition getKingPosition(TeamColor king_color) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -186,27 +197,14 @@ public class ChessGame {
                 }
             }
         }
-        System.out.println("No king found in getKingPosition");
+        System.out.println("There s no king found in getKingPosition");
         return null;
     }
 
-    private void makeTempMove(ChessMove move) {
-        ChessPiece piece = board.getPiece(move.getStartPosition());
-        ChessPiece capturedPiece = board.getPiece(move.getEndPosition());
-
-        //Clone the board.
-
-        board.setPiece(move.getEndPosition(), piece);
-        board.setPiece(move.getStartPosition(), null);
-
-        move.setCapturedPiece(capturedPiece); // Store captured piece in the move
-    }
-
-    private void undoTempMove(ChessMove move) {
-        ChessPiece piece = board.getPiece(move.getEndPosition());
-
-        board.setPiece(move.getStartPosition(), piece);
-        board.setPiece(move.getEndPosition(), move.getCapturedPiece());
+    private void makeTempmove(ChessBoard tempBoard, ChessMove move) {
+        ChessPiece piece = tempBoard.getPiece(move.getStartPosition());
+        tempBoard.addPiece(move.getEndPosition(), piece);
+        tempBoard.addPiece(move.getStartPosition(), null);
     }
 
     private ChessBoard cloneBoard(ChessBoard originalBoard) { //deep copy of ChessBoard
