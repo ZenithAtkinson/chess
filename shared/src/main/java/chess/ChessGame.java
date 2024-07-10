@@ -17,6 +17,7 @@ public class ChessGame {
 
     public ChessGame() {
         this.board = new ChessBoard();
+        board.resetBoard();
         this.currentTurn = TeamColor.WHITE; //white starts
     }
 
@@ -72,6 +73,15 @@ public class ChessGame {
         return validMoves;
     }
 
+    private boolean isMoveLegal(ChessMove move) {
+        ChessBoard tempBoard = cloneBoard(board);
+        makeTempmove(tempBoard, move);
+        setBoard(tempBoard);  // Set tempBoard as the current board
+        boolean legal = !isInCheck(currentTurn);
+        setBoard(board);  // Restore the original board
+        return legal;
+    }
+
     /**
      * Makes a move in a chess game
      *
@@ -84,8 +94,20 @@ public class ChessGame {
         //Will only work if given a possible move.
 
         //This function should call ValidMoves, NOT the other way around.
-        throw new RuntimeException("Not implemented");
-    }
+            Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
+            if (validMoves == null || !validMoves.contains(move)) {
+                throw new InvalidMoveException("Illegal move");
+            }
+
+            ChessPiece piece = board.getPiece(move.getStartPosition());
+            board.addPiece(move.getEndPosition(), piece);
+            board.addPiece(move.getStartPosition(), null);
+            currentTurn = (currentTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+
+            if (isInCheck(piece.getTeamColor())) {
+                throw new InvalidMoveException("Move leaves the king in check (NO NO)");
+            }
+        }
 
     /**
      * Determines if the given team is in check
