@@ -60,7 +60,6 @@ public class ChessGame {
      * @return Set of valid moves for the requested piece, or null if no piece at startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-
         ChessPiece piece = board.getPiece(startPosition);
         /*//Wil lcall the "isinCheck" functions
 
@@ -99,7 +98,7 @@ public class ChessGame {
             ChessPiece movingPiece = clonedBoard.getPiece(givenMove.getStartPosition());
             ActuallyDoMove(clonedBoard, givenMove);
             return isInCheck(movingPiece.getTeamColor(), clonedBoard);
-        } catch (InvalidMoveException NO) {
+        } catch (InvalidMoveException invalidmove) {
             return true;
         }
     }
@@ -310,16 +309,13 @@ public class ChessGame {
 
     //Handle promotion pieces (rewordked)
     private void doPromotion( ChessBoard board, ChessMove given_move, ChessPiece piece) throws InvalidMoveException { //my old promotion function just isnt owrking for some reason
-        if (board.getPiece(given_move.getEndPosition()) != null) {
-            board.addPiece(given_move.getEndPosition(), null);
-        }
+
         if (piece.getPieceType() != ChessPiece.PieceType.PAWN){
             throw new InvalidMoveException("Promotion piece isn't a pawn");
         }
         if ((piece.getTeamColor() == TeamColor.WHITE && given_move.getEndPosition().getRow() != 8) || (piece.getTeamColor() == TeamColor.BLACK && given_move.getEndPosition().getRow() != 1)){
             throw new InvalidMoveException("Move doesn't end at end of row (promotion)");
         }
-
         board.addPiece(given_move.getStartPosition(), null);
         board.addPiece(given_move.getEndPosition(), new ChessPiece(piece.getTeamColor(), given_move.getPromotionPiece()));
     }
