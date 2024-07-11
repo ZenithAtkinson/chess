@@ -15,7 +15,6 @@ public class ChessGame {
     private TeamColor currentTurn;
     private ChessPosition kingPosition;
 
-    // new chess game
     public ChessGame() {
         board = new ChessBoard();
         currentTurn = TeamColor.WHITE;
@@ -102,7 +101,6 @@ public class ChessGame {
         boolean legal = !isInCheck(piece.getTeamColor());
         return legal;
     }*/
-
     /**
      * Makes a move in a chess game
      *
@@ -138,7 +136,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return isInCheck(teamColor, board); //Its much easier if we can use the board, so just gonna call a separate function that returns true or false.
+        return isInCheck(teamColor, board);
     }
 
     // checking if a team is in check on the board
@@ -223,7 +221,6 @@ public class ChessGame {
         }*/
         return isInCheck(teamColor) && nullValidMoves(teamColor);
     }
-
     /**
      * Determines if the given team is in stalemate, which here is defined as having no valid moves
      *
@@ -232,7 +229,7 @@ public class ChessGame {
      */
     //isInStalemate: Returns true if the given team has no legal moves but their king is not in immediate danger.
     public boolean isInStalemate(TeamColor teamColor) {
-        //Accesses the same mechanic as Checkmate(?)
+        //Accesses the same mechanic as Checkmate
         //Youre not in check, but there are no valid moves.
         return !isInCheck(teamColor) && nullValidMoves(teamColor);
     }
@@ -269,31 +266,20 @@ public class ChessGame {
         return board;
     }
 
-    //Perform a move on the board
-    private void ActuallyDoMove(ChessMove move, ChessBoard board) throws InvalidMoveException {
-        ChessPiece piece = board.getPiece(move.getStartPosition());
+    //Perform move on the board                        -
+    private void ActuallyDoMove(ChessMove move, ChessBoard tempboard) throws InvalidMoveException {
+        ChessPiece piece = tempboard.getPiece(move.getStartPosition());
+        if (piece == null) throw new InvalidMoveException("No starting piece");
 
         if (move.getPromotionPiece() == null) {
-            board.addPiece(move.getStartPosition(), null);
-            board.addPiece(move.getEndPosition(), piece);
+            tempboard.addPiece(move.getStartPosition(), null);
+            tempboard.addPiece(move.getEndPosition(), piece);
         }
-        if (piece == null) throw new InvalidMoveException("No piece at starting position");
-
     }
-
-
-
-//private void makeTempmove(ChessBoard tempBoard, ChessMove move) {
+    //private void makeTempmove(ChessBoard tempBoard, ChessMove move) {
 
     //private ChessBoard cloneBoard(ChessBoard originalBoard) { //deep copy of ChessBoard
-    //moved to just the board class
-
-
-
-    @Override
-    public String toString() {
-        return board.toString() + ' ' + ((currentTurn == TeamColor.WHITE) ? 'w' : 'b');
-    }
+      //moved to just the board class
 
     @Override
     public boolean equals(Object o) {
@@ -302,10 +288,13 @@ public class ChessGame {
         ChessGame chessGame = (ChessGame) o;
         return Objects.equals(board, chessGame.board) && currentTurn == chessGame.currentTurn;
     }
-
     @Override
     public int hashCode() {
         return Objects.hash(board, currentTurn);
     }
 
+    @Override
+    public String toString() {
+        return board.toString() + ' ' + ((currentTurn == TeamColor.WHITE) ? 'w' : 'b');
+    }
 }
