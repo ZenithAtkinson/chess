@@ -7,4 +7,5 @@ public interface UserDAO {
     boolean addUser(UserData user) throws DataAccessException;
     boolean updateUser(UserData user) throws DataAccessException;
     boolean deleteUser(String username) throws DataAccessException;
+    void clear() throws DataAccessException;
 }

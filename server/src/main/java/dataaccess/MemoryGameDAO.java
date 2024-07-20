@@ -1,7 +1,9 @@
 package dataaccess;
 
 import model.GameData;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MemoryGameDAO implements GameDAO {
@@ -37,5 +39,15 @@ public class MemoryGameDAO implements GameDAO {
         }
         games.remove(gameID);
         return true;
+    }
+
+    @Override
+    public void clear() throws DataAccessException {
+        games.clear();
+    }
+
+    @Override
+    public List<GameData> getAllGames() throws DataAccessException {
+        return new ArrayList<>(games.values());
     }
 }
