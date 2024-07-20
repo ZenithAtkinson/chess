@@ -16,32 +16,46 @@ public class GameService {
         this.authDAO = authDAO;
     }
 
-    public GameData createGame(GameData request, String authToken) throws Exception {
-        try {
-            AuthData authData = authorize(authToken);
-
-            if (request.getGameName() == null) {
-                throw new IllegalArgumentException("Game name cannot be null");
+    public void joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
+        AuthData authData = authorize(authToken);
+        GameData game = gameDAO.getGame(request.getGameID());
+        if (game != null) {
+            if ("WHITE".equals(request.getPlayerColor()) && game.getWhiteUsername() == null) {
+                game.setWhiteUsername(authData.getUsername());
+            } else if ("BLACK".equals(request.getPlayerColor()) && game.getBlackUsername() == null) {
+                game.setBlackUsername(authData.getUsername());
+            } else {
+                throw new DataAccessException("Error: player color already taken or invalid color");
             }
-
-            GameData newGame = new GameData(0, authData.getUsername(), null, request.getGameName(), new ChessGame());
-            gameDAO.addGame(newGame);
-
-            return newGame;
-        } catch (DataAccessException e) {
-            throw new Exception(e);
+            gameDAO.updateGame(game);
+        } else {
+            throw new DataAccessException("Error: game not found");
         }
     }
 
-    private AuthData authorize(String authToken) throws Exception {
-        try {
-            AuthData authData = authDAO.getAuthData(authToken);
-            if (authData == null) {
-                throw new SecurityException("Error: Unauthorized");
-            }
-            return authData;
-        } catch (DataAccessException e) {
-            throw new Exception(e);
+    private AuthData authorize(String authToken) throws DataAccessException {
+        AuthData authData = authDAO.getAuthData(authToken);
+        if (authData == null) {
+            throw new DataAccessException("Error: unauthorized");
+        }
+        return authData;
+    }
+
+    public static class JoinGameRequest {
+        private final int gameID;
+        private final String playerColor;
+
+        public JoinGameRequest(int gameID, String playerColor) {
+            this.gameID = gameID;
+            this.playerColor = playerColor;
+        }
+
+        public int getGameID() {
+            return gameID;
+        }
+
+        public String getPlayerColor() {
+            return playerColor;
         }
     }
 }
