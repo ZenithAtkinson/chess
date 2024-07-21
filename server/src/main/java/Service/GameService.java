@@ -6,6 +6,9 @@ import dataaccess.GameDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
+import request.CreateGameRequest;
+import request.JoinGameRequest;
+import response.CreateGameResult;
 
 public class GameService {
     private final GameDAO gameDAO;
@@ -16,13 +19,20 @@ public class GameService {
         this.authDAO = authDAO;
     }
 
+    public CreateGameResult createGame(CreateGameRequest request, String authToken) throws DataAccessException {
+        AuthData authData = authorize(authToken);
+        GameData game = new GameData(0, authData.getUsername(), null, request.gameName(), new ChessGame());
+        gameDAO.addGame(game);
+        return new CreateGameResult(game.getGameID());
+    }
+
     public void joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
         AuthData authData = authorize(authToken);
-        GameData game = gameDAO.getGame(request.getGameID());
+        GameData game = gameDAO.getGame(request.gameID());
         if (game != null) {
-            if ("WHITE".equals(request.getPlayerColor()) && game.getWhiteUsername() == null) {
+            if ("WHITE".equals(request.playerColor()) && game.getWhiteUsername() == null) {
                 game.setWhiteUsername(authData.getUsername());
-            } else if ("BLACK".equals(request.getPlayerColor()) && game.getBlackUsername() == null) {
+            } else if ("BLACK".equals(request.playerColor()) && game.getBlackUsername() == null) {
                 game.setBlackUsername(authData.getUsername());
             } else {
                 throw new DataAccessException("Error: player color already taken or invalid color");
@@ -39,23 +49,5 @@ public class GameService {
             throw new DataAccessException("Error: unauthorized");
         }
         return authData;
-    }
-
-    public static class JoinGameRequest {
-        private final int gameID;
-        private final String playerColor;
-
-        public JoinGameRequest(int gameID, String playerColor) {
-            this.gameID = gameID;
-            this.playerColor = playerColor;
-        }
-
-        public int getGameID() {
-            return gameID;
-        }
-
-        public String getPlayerColor() {
-            return playerColor;
-        }
     }
 }

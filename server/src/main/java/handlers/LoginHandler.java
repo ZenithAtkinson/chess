@@ -2,13 +2,11 @@ package handlers;
 
 import dataaccess.AuthDAO;
 import dataaccess.UserDAO;
-import handlers.HandlerForHttps;
-import model.UserData;
+import request.LoginRequest;
+import response.LoginResult;
 import Service.LoginService;
-import model.AuthData;
 
-public class LoginHandler extends HandlerForHttps<UserData> {
-
+public class LoginHandler extends HandlerForHttps<LoginRequest> {
     private final LoginService loginService;
 
     public LoginHandler(UserDAO userDAO, AuthDAO authDAO) {
@@ -16,12 +14,12 @@ public class LoginHandler extends HandlerForHttps<UserData> {
     }
 
     @Override
-    protected Class<UserData> getRequestClass() {
-        return UserData.class;
+    protected Class<LoginRequest> getRequestClass() {
+        return LoginRequest.class;
     }
 
     @Override
-    protected AuthData getResult(UserData request, String authToken) throws Exception {
+    protected LoginResult getResult(LoginRequest request, String authToken) throws Exception {
         return loginService.login(request);
     }
 }

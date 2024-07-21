@@ -1,10 +1,12 @@
 package Service;
 
-import dataaccess.AuthDAO;
 import dataaccess.UserDAO;
+import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
+import request.LoginRequest;
+import response.LoginResult;
 
 public class LoginService {
     private final UserDAO userDAO;
@@ -15,13 +17,13 @@ public class LoginService {
         this.authDAO = authDAO;
     }
 
-    public AuthData login(UserData request) throws DataAccessException {
-        UserData user = userDAO.getUser(request.getUsername());
-        if (user != null && user.getPassword().equals(request.getPassword())) {
+    public LoginResult login(LoginRequest request) throws DataAccessException {
+        UserData user = userDAO.getUser(request.username());
+        if (user != null && user.getPassword().equals(request.password())) {
             String authToken = generateAuthToken();
             AuthData authData = new AuthData(authToken, user.getUsername());
             authDAO.addAuthData(authData);
-            return authData;
+            return new LoginResult(user.getUsername(), authToken);
         } else {
             throw new DataAccessException("Error: invalid username or password");
         }

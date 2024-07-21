@@ -22,6 +22,7 @@ public abstract class HandlerForHttps<T> implements Route {
 
         Object result = getResult(requestObject, authToken);
 
+        response.type("application/json");
         response.status(HttpURLConnection.HTTP_OK);
 
         return gson.toJson(result);

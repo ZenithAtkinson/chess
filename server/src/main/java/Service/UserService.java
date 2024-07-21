@@ -5,6 +5,8 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
+import request.RegisterRequest;
+import response.RegisterResult;
 
 public class UserService {
     private final UserDAO userDAO;
@@ -15,12 +17,13 @@ public class UserService {
         this.authDAO = authDAO;
     }
 
-    public AuthData register(UserData user) throws Exception {
+    public RegisterResult register(RegisterRequest request) throws Exception {
+        UserData user = new UserData(request.username(), request.password(), request.email());
         if (userDAO.addUser(user)) {
             String authToken = generateAuthToken();
             AuthData authData = new AuthData(authToken, user.getUsername());
             authDAO.addAuthData(authData);
-            return authData;
+            return new RegisterResult(user.getUsername(), authToken);
         } else {
             throw new Exception("User already exists");
         }
