@@ -3,7 +3,7 @@ package handlers;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import response.ListGamesResult;
-import Service.ListGamesService;
+import service.ListGamesService;
 import com.google.gson.Gson;
 import spark.Request;
 import spark.Response;

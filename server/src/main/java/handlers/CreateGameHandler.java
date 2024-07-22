@@ -4,7 +4,7 @@ import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import request.CreateGameRequest;
 import response.CreateGameResult;
-import Service.GameService;
+import service.GameService;
 import com.google.gson.Gson;
 import spark.Request;
 import spark.Response;

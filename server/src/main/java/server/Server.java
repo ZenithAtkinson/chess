@@ -9,7 +9,7 @@ import dataaccess.UserDAO;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
-import Service.ClearService;
+import service.ClearService;
 
 public class Server {
 

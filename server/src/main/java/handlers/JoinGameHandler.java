@@ -3,7 +3,7 @@ package handlers;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import request.JoinGameRequest;
-import Service.GameService;
+import service.GameService;
 
 public class JoinGameHandler extends HandlerForHttps<JoinGameRequest> {
     private final GameService gameService;

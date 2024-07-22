@@ -1,33 +1,38 @@
 package handlers;
 
-import dataaccess.AuthDAO;
-import dataaccess.UserDAO;
+import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import request.RegisterRequest;
 import response.RegisterResult;
-import Service.UserService;
-import com.google.gson.Gson;
+import service.RegisterService;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import java.net.HttpURLConnection;
+
 public class RegisterHandler implements Route {
-    private final UserService userService;
+    private final RegisterService registerService;
     private final Gson gson = new Gson();
 
-    public RegisterHandler(UserDAO userDAO, AuthDAO authDAO) {
-        this.userService = new UserService(userDAO, authDAO);
+    public RegisterHandler(RegisterService registerService) {
+        this.registerService = registerService;
     }
 
     @Override
     public Object handle(Request request, Response response) throws Exception {
-        // Deserialize the request object from JSON
         RegisterRequest registerRequest = gson.fromJson(request.body(), RegisterRequest.class);
-
-        // Process the request and get the result
-        RegisterResult result = userService.register(registerRequest);
-
-        // Serialize the result object to JSON
-        response.type("application/json");
-        return gson.toJson(result);
+        try {
+            RegisterResult result = registerService.register(registerRequest);
+            response.status(HttpURLConnection.HTTP_OK);
+            return gson.toJson(result);
+        } catch (DataAccessException e) {
+            if ("User already exists".equals(e.getMessage())) {
+                response.status(HttpURLConnection.HTTP_FORBIDDEN);
+            } else {
+                response.status(HttpURLConnection.HTTP_INTERNAL_ERROR);
+            }
+            return gson.toJson(new RegisterResult(e.getMessage()));
+        }
     }
 }

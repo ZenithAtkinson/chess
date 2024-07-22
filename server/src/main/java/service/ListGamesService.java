@@ -1,4 +1,4 @@
-package Service;
+package service;
 
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
@@ -7,9 +7,12 @@ import model.AuthData;
 import model.GameData;
 import response.ListGamesResult;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.ArrayList;
 
 public class ListGamesService {
+
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
 
@@ -21,8 +24,9 @@ public class ListGamesService {
     public ListGamesResult listGames(String authToken) throws DataAccessException {
         AuthData authData = authDAO.getAuthData(authToken);
         if (authData != null) {
-            List<GameData> games = gameDAO.getAllGames();
-            return new ListGamesResult(games); // Return ListGamesResult instead of List<GameData>
+            Collection<GameData> gamesCollection = gameDAO.getAllGames();
+            List<GameData> gamesList = new ArrayList<>(gamesCollection); // Convert to List<GameData>
+            return new ListGamesResult(gamesList);
         } else {
             throw new DataAccessException("Error: unauthorized");
         }

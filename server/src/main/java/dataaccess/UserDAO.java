@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.UserData;
+import java.util.List;
 
 public interface UserDAO {
     UserData getUser(String username) throws DataAccessException;
@@ -8,4 +9,7 @@ public interface UserDAO {
     boolean updateUser(UserData user) throws DataAccessException;
     boolean deleteUser(String username) throws DataAccessException;
     void clear() throws DataAccessException;
+    boolean usernameExists(String username) throws DataAccessException;
+    boolean verifyUser(UserData user) throws DataAccessException;
+    List<UserData> getAllUsers() throws DataAccessException;
 }

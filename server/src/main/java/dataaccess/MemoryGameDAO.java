@@ -1,53 +1,48 @@
 package dataaccess;
 
 import model.GameData;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MemoryGameDAO implements GameDAO {
-    private Map<Integer, GameData> games = new HashMap<>();
+    private final Map<Integer, GameData> games = new HashMap<>();
+    private int currentGameID = 1;
 
     @Override
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(int gameID) {
         return games.get(gameID);
     }
 
     @Override
-    public boolean addGame(GameData game) throws DataAccessException {
+    public boolean addGame(GameData game) {
+        game.setGameID(currentGameID++);
+        games.put(game.getGameID(), game);
+        return true;
+    }
+
+    @Override
+    public boolean updateGame(GameData game) {
         if (games.containsKey(game.getGameID())) {
-            return false;
+            games.put(game.getGameID(), game);
+            return true;
         }
-        games.put(game.getGameID(), game);
-        return true;
+        return false;
     }
 
     @Override
-    public boolean updateGame(GameData game) throws DataAccessException {
-        if (!games.containsKey(game.getGameID())) {
-            return false;
-        }
-        games.put(game.getGameID(), game);
-        return true;
+    public boolean deleteGame(int gameID) {
+        return games.remove(gameID) != null;
     }
 
     @Override
-    public boolean deleteGame(int gameID) throws DataAccessException {
-        if (!games.containsKey(gameID)) {
-            return false;
-        }
-        games.remove(gameID);
-        return true;
-    }
-
-    @Override
-    public void clear() throws DataAccessException {
+    public void clear() {
         games.clear();
+        currentGameID = 1;
     }
 
     @Override
-    public List<GameData> getAllGames() throws DataAccessException {
-        return new ArrayList<>(games.values());
+    public Collection<GameData> getAllGames() {
+        return games.values();
     }
 }

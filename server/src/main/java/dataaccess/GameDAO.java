@@ -1,7 +1,7 @@
 package dataaccess;
 
 import model.GameData;
-import java.util.List;
+import java.util.Collection;
 
 public interface GameDAO {
     GameData getGame(int gameID) throws DataAccessException;
@@ -9,5 +9,5 @@ public interface GameDAO {
     boolean updateGame(GameData game) throws DataAccessException;
     boolean deleteGame(int gameID) throws DataAccessException;
     void clear() throws DataAccessException;
-    List<GameData> getAllGames() throws DataAccessException;
+    Collection<GameData> getAllGames() throws DataAccessException;
 }

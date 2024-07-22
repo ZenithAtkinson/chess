@@ -1,6 +1,5 @@
-package Service;
+package service;
 
-import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.DataAccessException;
@@ -21,21 +20,24 @@ public class GameService {
 
     public CreateGameResult createGame(CreateGameRequest request, String authToken) throws DataAccessException {
         AuthData authData = authorize(authToken);
-        GameData game = new GameData(0, authData.getUsername(), null, request.gameName(), new ChessGame());
-        gameDAO.addGame(game);
-        return new CreateGameResult(game.getGameID());
+        if (request.getGameName() == null || request.getGameName().isEmpty()) {
+            throw new DataAccessException("Error: Game name cannot be null or empty");
+        }
+        GameData newGame = new GameData(0, authData.getUsername(), null, request.getGameName(), null);
+        gameDAO.addGame(newGame);
+        return new CreateGameResult(newGame.getGameID());
     }
 
     public void joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
         AuthData authData = authorize(authToken);
-        GameData game = gameDAO.getGame(request.gameID());
+        GameData game = gameDAO.getGame(request.getGameID());
         if (game != null) {
-            if ("WHITE".equals(request.playerColor()) && game.getWhiteUsername() == null) {
+            if ("WHITE".equals(request.getPlayerColor()) && game.getWhiteUsername() == null) {
                 game.setWhiteUsername(authData.getUsername());
-            } else if ("BLACK".equals(request.playerColor()) && game.getBlackUsername() == null) {
+            } else if ("BLACK".equals(request.getPlayerColor()) && game.getBlackUsername() == null) {
                 game.setBlackUsername(authData.getUsername());
             } else {
-                throw new DataAccessException("Error: player color already taken or invalid color");
+                throw new DataAccessException("Error: invalid player color or player color already taken");
             }
             gameDAO.updateGame(game);
         } else {

@@ -1,31 +1,31 @@
-package Service;
+package service;
 
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
-import request.RegisterRequest;
-import response.RegisterResult;
+import request.LoginRequest;
+import response.LoginResult;
 
-public class UserService {
+public class LoginService {
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
 
-    public UserService(UserDAO userDAO, AuthDAO authDAO) {
+    public LoginService(UserDAO userDAO, AuthDAO authDAO) {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
     }
 
-    public RegisterResult register(RegisterRequest request) throws Exception {
-        UserData user = new UserData(request.username(), request.password(), request.email());
-        if (userDAO.addUser(user)) {
+    public LoginResult login(LoginRequest request) throws DataAccessException {
+        UserData user = userDAO.getUser(request.username());
+        if (user != null && user.getPassword().equals(request.password())) {
             String authToken = generateAuthToken();
             AuthData authData = new AuthData(authToken, user.getUsername());
             authDAO.addAuthData(authData);
-            return new RegisterResult(user.getUsername(), authToken);
+            return new LoginResult(user.getUsername(), authToken);
         } else {
-            throw new Exception("User already exists");
+            throw new DataAccessException("Error: invalid username or password");
         }
     }
 
@@ -33,3 +33,5 @@ public class UserService {
         return java.util.UUID.randomUUID().toString();
     }
 }
+
+
