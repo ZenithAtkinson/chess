@@ -2,12 +2,10 @@ package handlers;
 
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
+import request.JoinGameRequest;
 import Service.GameService;
 
-import java.util.Map;
-
-public class JoinGameHandler extends HandlerForHttps<Object> {
-
+public class JoinGameHandler extends HandlerForHttps<JoinGameRequest> {
     private final GameService gameService;
 
     public JoinGameHandler(GameDAO gameDAO, AuthDAO authDAO) {
@@ -15,17 +13,13 @@ public class JoinGameHandler extends HandlerForHttps<Object> {
     }
 
     @Override
-    protected Class<Object> getRequestClass() {
-        return Object.class;
+    protected Class<JoinGameRequest> getRequestClass() {
+        return JoinGameRequest.class;
     }
 
     @Override
-    protected Object getResult(Object request, String authToken) throws Exception {
-        GameService.JoinGameRequest joinGameRequest = new GameService.JoinGameRequest(
-                ((Number) ((Map<?, ?>) request).get("gameID")).intValue(),
-                (String) ((Map<?, ?>) request).get("playerColor")
-        );
-        gameService.joinGame(joinGameRequest, authToken);
+    protected Object getResult(JoinGameRequest request, String authToken) throws Exception {
+        gameService.joinGame(request, authToken);
         return null;
     }
 }

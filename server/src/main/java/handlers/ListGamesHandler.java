@@ -2,25 +2,31 @@ package handlers;
 
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
-import model.GameData;
+import response.ListGamesResult;
 import Service.ListGamesService;
-import java.util.List;
+import com.google.gson.Gson;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 
-public class ListGamesHandler extends HandlerForHttps<Void> {
-
+public class ListGamesHandler implements Route {
     private final ListGamesService listGamesService;
+    private final Gson gson = new Gson();
 
     public ListGamesHandler(GameDAO gameDAO, AuthDAO authDAO) {
         this.listGamesService = new ListGamesService(gameDAO, authDAO);
     }
 
     @Override
-    protected Class<Void> getRequestClass() {
-        return Void.class;
-    }
+    public Object handle(Request request, Response response) throws Exception {
+        // Get the auth token from the header
+        String authToken = request.headers("Authorization");
 
-    @Override
-    protected List<GameData> getResult(Void request, String authToken) throws Exception {
-        return listGamesService.listGames(authToken);
+        // Process the request and get the result
+        ListGamesResult result = listGamesService.listGames(authToken); // Ensure this matches the return type
+
+        // Serialize the result object to JSON
+        response.type("application/json");
+        return gson.toJson(result);
     }
 }

@@ -5,6 +5,7 @@ import dataaccess.GameDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
+import response.ListGamesResult;
 
 import java.util.List;
 
@@ -17,10 +18,11 @@ public class ListGamesService {
         this.authDAO = authDAO;
     }
 
-    public List<GameData> listGames(String authToken) throws DataAccessException {
+    public ListGamesResult listGames(String authToken) throws DataAccessException {
         AuthData authData = authDAO.getAuthData(authToken);
         if (authData != null) {
-            return gameDAO.getAllGames();
+            List<GameData> games = gameDAO.getAllGames();
+            return new ListGamesResult(games); // Return ListGamesResult instead of List<GameData>
         } else {
             throw new DataAccessException("Error: unauthorized");
         }

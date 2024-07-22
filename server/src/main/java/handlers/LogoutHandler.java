@@ -2,23 +2,30 @@ package handlers;
 
 import dataaccess.AuthDAO;
 import Service.LogoutService;
+import com.google.gson.Gson;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 
-public class LogoutHandler extends HandlerForHttps<Void> {
-
+public class LogoutHandler implements Route {
     private final LogoutService logoutService;
+    private final Gson gson = new Gson();
 
     public LogoutHandler(AuthDAO authDAO) {
         this.logoutService = new LogoutService(authDAO);
     }
 
     @Override
-    protected Class<Void> getRequestClass() {
-        return Void.class;
-    }
+    public Object handle(Request request, Response response) throws Exception {
+        // Get the auth token from the header
+        String authToken = request.headers("Authorization");
 
-    @Override
-    protected Void getResult(Void request, String authToken) throws Exception {
+        // Process the request
         logoutService.logout(authToken);
-        return null;
+
+        // Return a success response
+        response.type("application/json");
+        response.status(200);
+        return gson.toJson(new Object());
     }
 }
