@@ -25,7 +25,7 @@ public class ListGamesService {
         AuthData authData = authDAO.getAuthData(authToken);
         if (authData != null) {
             Collection<GameData> gamesCollection = gameDAO.getAllGames();
-            List<GameData> gamesList = new ArrayList<>(gamesCollection); // Convert to List<GameData>
+            List<GameData> gamesList = new ArrayList<>(gamesCollection); // List<GameData> from Collection?
             return new ListGamesResult(gamesList);
         } else {
             throw new DataAccessException("Error: unauthorized");

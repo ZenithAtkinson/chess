@@ -75,8 +75,8 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public List<AuthData> getAllAuthData() throws DataAccessException {
-        // Implementation similar to getAuthData but fetching all records
-        return null; // Implement as needed
+        //Implementation similar to getAuthData but fetching all records
+        return null; //Further stuff needed?
     }
 
     @Override

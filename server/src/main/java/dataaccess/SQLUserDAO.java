@@ -50,32 +50,6 @@ public class SQLUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean deleteUser(String username) throws DataAccessException {
-        String query = "DELETE FROM User WHERE username = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, username);
-            int rowsDeleted = statement.executeUpdate();
-            return rowsDeleted > 0;
-        } catch (SQLException e) {
-            throw new DataAccessException("Error deleting user data", e);
-        }
-    }
-
-    @Override
-    public boolean updateUser(UserData user) throws DataAccessException {
-        String query = "UPDATE User SET password = ?, email = ? WHERE username = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, user.getPassword());
-            statement.setString(2, user.getEmail());
-            statement.setString(3, user.getUsername());
-            int rowsUpdated = statement.executeUpdate();
-            return rowsUpdated > 0;
-        } catch (SQLException e) {
-            throw new DataAccessException("Error updating user data", e);
-        }
-    }
-
-    @Override
     public void clear() throws DataAccessException {
         String query = "TRUNCATE TABLE User";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -104,7 +78,7 @@ public class SQLUserDAO implements UserDAO {
         return userList;
     }
 
-    // Extra create the User table if it DON't exist
+    //Extra create the User table if it DON't exist
     public void createTable() throws DataAccessException {
         String query = """
             CREATE TABLE IF NOT EXISTS User (

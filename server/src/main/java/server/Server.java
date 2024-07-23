@@ -21,15 +21,15 @@ public class Server {
         // Set the location for static files
         Spark.staticFiles.location("web");
 
-        // Initialize DAOs with concrete implementations
+        //Initialize DAO'ss
         UserDAO userDAO = new MemoryUserDAO();
         GameDAO gameDAO = new MemoryGameDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
 
-        // Initialize services
+        //Initialize services
         RegisterService registerService = new RegisterService(userDAO, authDAO);
 
-        // Register handlers
+        //Register handlers
         Spark.post("/user", new RegisterHandler(registerService));
         Spark.post("/session", new LoginHandler(userDAO, authDAO));
         Spark.delete("/session", new LogoutHandler(authDAO));

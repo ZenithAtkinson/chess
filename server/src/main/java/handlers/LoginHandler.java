@@ -20,7 +20,7 @@ public class LoginHandler implements Route {
         this.loginService = new LoginService(userDAO, authDAO);
     }
 
-    @@Override
+    @Override
     // Handle the HTTP request to log in a user
     public Object handle(Request request, Response response) throws Exception {
         try {

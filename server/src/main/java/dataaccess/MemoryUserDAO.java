@@ -11,10 +11,12 @@ public class MemoryUserDAO implements UserDAO {
 
     @Override
     public UserData getUser(String username) {
+        //Get user data
         return userDataMap.get(username);
     }
 
     @Override
+    // Add a new user
     public boolean addUser(UserData user) {
         if (userDataMap.containsKey(user.getUsername())) {
             return false; // User already exists
@@ -23,30 +25,15 @@ public class MemoryUserDAO implements UserDAO {
         return true;
     }
 
-    @Override
-    public boolean updateUser(UserData user) {
-        if (!userDataMap.containsKey(user.getUsername())) {
-            return false;
-        }
-        userDataMap.put(user.getUsername(), user);
-        return true;
-    }
 
     @Override
-    public boolean deleteUser(String username) {
-        if (!userDataMap.containsKey(username)) {
-            return false;
-        }
-        userDataMap.remove(username);
-        return true;
-    }
-
-    @Override
+    // Clear all users
     public void clear() {
         userDataMap.clear();
     }
 
     @Override
+    //Get all users
     public List<UserData> getAllUsers() {
         return new ArrayList<>(userDataMap.values());
     }
