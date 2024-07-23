@@ -10,21 +10,21 @@ public class MemoryUserDAO implements UserDAO {
     private final Map<String, UserData> userDataMap = new HashMap<>();
 
     @Override
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username) {
         return userDataMap.get(username);
     }
 
     @Override
-    public boolean addUser(UserData user) throws DataAccessException {
+    public boolean addUser(UserData user) {
         if (userDataMap.containsKey(user.getUsername())) {
-            return false;
+            return false; // User already exists
         }
         userDataMap.put(user.getUsername(), user);
         return true;
     }
 
     @Override
-    public boolean updateUser(UserData user) throws DataAccessException {
+    public boolean updateUser(UserData user) {
         if (!userDataMap.containsKey(user.getUsername())) {
             return false;
         }
@@ -33,7 +33,7 @@ public class MemoryUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean deleteUser(String username) throws DataAccessException {
+    public boolean deleteUser(String username) {
         if (!userDataMap.containsKey(username)) {
             return false;
         }
@@ -42,23 +42,12 @@ public class MemoryUserDAO implements UserDAO {
     }
 
     @Override
-    public void clear() throws DataAccessException {
+    public void clear() {
         userDataMap.clear();
     }
 
     @Override
-    public boolean usernameExists(String username) throws DataAccessException {
-        return userDataMap.containsKey(username);
-    }
-
-    @Override
-    public boolean verifyUser(UserData user) throws DataAccessException {
-        UserData storedUser = userDataMap.get(user.getUsername());
-        return storedUser != null && storedUser.getPassword().equals(user.getPassword());
-    }
-
-    @Override
-    public List<UserData> getAllUsers() throws DataAccessException {
+    public List<UserData> getAllUsers() {
         return new ArrayList<>(userDataMap.values());
     }
 }

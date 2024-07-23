@@ -1,17 +1,23 @@
 package response;
 
 public class CreateGameResult {
-    private int gameID;
+    private Integer gameID;
+    private String message;
 
     public CreateGameResult(int gameID) {
         this.gameID = gameID;
     }
 
-    public int getGameID() {
+    public CreateGameResult(String message) {
+        this.message = message;
+        this.gameID = null;
+    }
+
+    public Integer getGameID() {
         return gameID;
     }
 
-    public void setGameID(int gameID) {
-        this.gameID = gameID;
+    public String getMessage() {
+        return message;
     }
 }

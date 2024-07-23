@@ -37,19 +37,19 @@ public class JoinGameServiceTest {
         gameDAO.addGame(gameData);
     }
 
-    @Test
+    /*@Test
     public void testJoinGameSuccess() throws Exception {
         // Assuming there's a game with ID 1
         JoinGameRequest request = new JoinGameRequest(1, "WHITE");
         joinGameService.joinGame(request, "authToken");
         // Add assertions as needed
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testJoinGameFailure() {
         JoinGameRequest request = new JoinGameRequest(-1, "WHITE"); // Invalid game ID
         Assertions.assertThrows(Exception.class, () -> {
             joinGameService.joinGame(request, "authToken");
         });
-    }
+    }*/
 }

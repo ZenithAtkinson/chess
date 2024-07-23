@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 public class SQLGameDAO implements GameDAO {
     private final Connection conn;
@@ -20,7 +20,7 @@ public class SQLGameDAO implements GameDAO {
     public GameData getGame(int gameID) throws DataAccessException {
         GameData game = null;
         ResultSet rs = null;
-        String sql = "SELECT * FROM games WHERE gameID = ?;";
+        String sql = "SELECT * FROM Games WHERE gameID = ?;";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, gameID);
@@ -31,11 +31,12 @@ public class SQLGameDAO implements GameDAO {
                         rs.getString("whiteUsername"),
                         rs.getString("blackUsername"),
                         rs.getString("gameName"),
-                        null // Assuming ChessGame object needs to be constructed from another method
+                        null // Assuming additional parameter is not needed from database
                 );
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error encountered while finding game", e);
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while finding game");
         } finally {
             if (rs != null) {
                 try {
@@ -51,93 +52,86 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public boolean addGame(GameData game) throws DataAccessException {
-        String sql = "INSERT INTO games (gameID, whiteUsername, blackUsername, gameName) VALUES (?, ?, ?, ?);";
-
+        String sql = "INSERT INTO Games (whiteUsername, blackUsername, gameName, additionalParameter) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, game.getGameID());
-            stmt.setString(2, game.getWhiteUsername());
-            stmt.setString(3, game.getBlackUsername());
-            stmt.setString(4, game.getGameName());
+            stmt.setString(1, game.getWhiteUsername());
+            stmt.setString(2, game.getBlackUsername());
+            stmt.setString(3, game.getGameName());
+            //stmt.setObject(4, game.getAdditionalParameter()); /djust based on actual type
+            ////not implemented
 
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {
-            throw new DataAccessException("Error encountered while inserting game", e);
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while inserting game into the database");
         }
     }
 
     @Override
     public boolean updateGame(GameData game) throws DataAccessException {
-        String sql = "UPDATE games SET whiteUsername = ?, blackUsername = ?, gameName = ? WHERE gameID = ?;";
-
+        String sql = "UPDATE Games SET whiteUsername = ?, blackUsername = ?, gameName = ?, additionalParameter = ? WHERE gameID = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, game.getWhiteUsername());
             stmt.setString(2, game.getBlackUsername());
             stmt.setString(3, game.getGameName());
-            stmt.setInt(4, game.getGameID());
+            //stmt.setObject(4, game.getAdditionalParameter()); //Adjust
+            //not implemented
+            stmt.setInt(5, game.getGameID());
 
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {
-            throw new DataAccessException("Error encountered while updating game", e);
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while updating game in the database");
         }
     }
 
     @Override
     public boolean deleteGame(int gameID) throws DataAccessException {
-        String sql = "DELETE FROM games WHERE gameID = ?;";
-
+        String sql = "DELETE FROM Games WHERE gameID = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, gameID);
 
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {
-            throw new DataAccessException("Error encountered while deleting game", e);
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while deleting game from the database");
         }
     }
 
     @Override
     public void clear() throws DataAccessException {
-        String sql = "DELETE FROM games;";
-
+        String sql = "DELETE FROM Games";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("Error encountered while clearing games", e);
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while clearing games from the database");
         }
     }
 
     @Override
-    public List<GameData> getAllGames() throws DataAccessException {
-        List<GameData> games = new ArrayList<>();
-        ResultSet rs = null;
-        String sql = "SELECT * FROM games;";
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            rs = stmt.executeQuery();
+    public Collection<GameData> getAllGames() throws DataAccessException {
+        Collection<GameData> games = new ArrayList<>();
+        String sql = "SELECT * FROM Games";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 GameData game = new GameData(
                         rs.getInt("gameID"),
                         rs.getString("whiteUsername"),
                         rs.getString("blackUsername"),
                         rs.getString("gameName"),
-                        null // Assuming ChessGame object needs to be constructed from another method
+                        null // Assuming additional parameter is not needed from database
                 );
                 games.add(game);
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error encountered while retrieving all games", e);
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while getting all games from the database");
         }
-
         return games;
     }
 }

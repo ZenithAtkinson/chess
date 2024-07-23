@@ -1,25 +1,70 @@
 package handlers;
 
+import com.google.gson.Gson;
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import request.JoinGameRequest;
-import service.GameService;
+import service.JoinGameService;
+import spark.Request;
+import spark.Response;
+import spark.Route;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class JoinGameHandler extends HandlerForHttps<JoinGameRequest> {
-    private final GameService gameService;
+public class JoinGameHandler implements Route {
+    private final JoinGameService joinGameService;
+    private final Gson gson = new Gson();
+    private static final Logger logger = LoggerFactory.getLogger(JoinGameHandler.class);
 
     public JoinGameHandler(GameDAO gameDAO, AuthDAO authDAO) {
-        this.gameService = new GameService(gameDAO, authDAO);
+        this.joinGameService = new JoinGameService(gameDAO, authDAO);
     }
 
     @Override
-    protected Class<JoinGameRequest> getRequestClass() {
-        return JoinGameRequest.class;
+    public Object handle(Request req, Response res) {
+        //Parse the join game request from the request body
+        JoinGameRequest request = gson.fromJson(req.body(), JoinGameRequest.class);
+        //Get the authorization token from the request headers
+        String authToken = req.headers("Authorization");
+
+        try {
+            //LOG ALL THE ERRORS, for the test cases that don't work
+            logger.debug("Handling join game request: {}", request);
+            // Call the service to join the game
+            joinGameService.joinGame(request, authToken);
+            res.status(200);
+            return gson.toJson(new ResponseMessage("Game joined successfully"));
+        } catch (DataAccessException e) {
+            logger.error("Error during join game: {}", e.getMessage());
+            String errorMessage = e.getMessage();
+            logger.error("Response error message: {}", errorMessage);
+            switch (errorMessage) {
+                case "Unauthorized":
+                    res.status(401);
+                    break;
+                case "Game not found":
+                    res.status(400);
+                    break;
+                case "Invalid player color":
+                    res.status(400);
+                    break;
+                case "Player color already taken":
+                    res.status(403);  //Update status to 403 for the case
+                    break;
+                default:
+                    res.status(500);
+                    errorMessage = "Internal server error: " + errorMessage;
+                    break;
+            }
+            String responseBody = gson.toJson(new ResponseMessage("error: " + errorMessage));
+            res.body(responseBody);
+            logger.debug("Returning error response with message: {}", responseBody);
+            return res.body();
+        }
     }
 
-    @Override
-    protected Object getResult(JoinGameRequest request, String authToken) throws Exception {
-        gameService.joinGame(request, authToken);
-        return null;
+    //Response message record class
+    private record ResponseMessage(String message) {
     }
 }

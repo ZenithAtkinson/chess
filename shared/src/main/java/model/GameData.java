@@ -1,22 +1,21 @@
 package model;
 
-import chess.ChessGame;
-
 public class GameData {
     private int gameID;
     private String whiteUsername;
     private String blackUsername;
     private String gameName;
-    private ChessGame game;
+    private Object additionalParameter; // Replace with actual type if necessary
 
-    public GameData(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game) {
+    public GameData(int gameID, String whiteUsername, String blackUsername, String gameName, Object additionalParameter) {
         this.gameID = gameID;
         this.whiteUsername = whiteUsername;
         this.blackUsername = blackUsername;
         this.gameName = gameName;
-        this.game = game;
+        this.additionalParameter = additionalParameter;
     }
 
+    // Getters and setters
     public int getGameID() {
         return gameID;
     }
@@ -49,11 +48,11 @@ public class GameData {
         this.gameName = gameName;
     }
 
-    public ChessGame getGame() {
-        return game;
+    /*public Object getChessGame() {
+        return chessGame;
     }
 
-    public void setGame(ChessGame game) {
-        this.game = game;
-    }
+    public void setChessGame(Object chessGame) {
+        this.chessGame = chessGame;
+    }*/
 }

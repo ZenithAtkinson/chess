@@ -2,8 +2,8 @@ package dataaccess;
 
 import model.AuthData;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MemoryAuthDAO implements AuthDAO {
@@ -32,6 +32,7 @@ public class MemoryAuthDAO implements AuthDAO {
     public List<AuthData> getAllAuthData() {
         return new ArrayList<>(authDataMap.values());
     }
+
     @Override
     public boolean deleteAuthData(String authToken) throws DataAccessException {
         if (!authDataMap.containsKey(authToken)) {
@@ -40,10 +41,11 @@ public class MemoryAuthDAO implements AuthDAO {
         authDataMap.remove(authToken);
         return true;
     }
+
+    @Override
+    public String generateAuthToken(String username) {
+        String authToken = java.util.UUID.randomUUID().toString();
+        authDataMap.put(authToken, new AuthData(authToken, username));
+        return authToken;
+    }
 }
-
-
-
-
-
-

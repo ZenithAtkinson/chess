@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class MemoryGameDAO implements GameDAO {
     private final Map<Integer, GameData> games = new HashMap<>();
-    private int currentGameID = 1;
+    private int nextId = 1;
 
     @Override
     public GameData getGame(int gameID) {
@@ -16,29 +16,36 @@ public class MemoryGameDAO implements GameDAO {
 
     @Override
     public boolean addGame(GameData game) {
-        game.setGameID(currentGameID++);
+        if (games.containsKey(game.getGameID())) {
+            return false;
+        }
+        game.setGameID(nextId++);
         games.put(game.getGameID(), game);
         return true;
     }
 
     @Override
     public boolean updateGame(GameData game) {
-        if (games.containsKey(game.getGameID())) {
-            games.put(game.getGameID(), game);
-            return true;
+        if (!games.containsKey(game.getGameID())) {
+            return false;
         }
-        return false;
+        games.put(game.getGameID(), game);
+        return true;
     }
 
     @Override
     public boolean deleteGame(int gameID) {
-        return games.remove(gameID) != null;
+        if (!games.containsKey(gameID)) {
+            return false;
+        }
+        games.remove(gameID);
+        return true;
     }
 
     @Override
     public void clear() {
         games.clear();
-        currentGameID = 1;
+        nextId = 1;
     }
 
     @Override

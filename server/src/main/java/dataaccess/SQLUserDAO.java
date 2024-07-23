@@ -86,31 +86,6 @@ public class SQLUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean usernameExists(String username) throws DataAccessException {
-        String query = "SELECT * FROM User WHERE username = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, username);
-            ResultSet resultSet = statement.executeQuery();
-            return resultSet.next();
-        } catch (SQLException e) {
-            throw new DataAccessException("Error checking username existence", e);
-        }
-    }
-
-    @Override
-    public boolean verifyUser(UserData user) throws DataAccessException {
-        String query = "SELECT * FROM User WHERE username = ? AND password = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, user.getUsername());
-            statement.setString(2, user.getPassword());
-            ResultSet resultSet = statement.executeQuery();
-            return resultSet.next();
-        } catch (SQLException e) {
-            throw new DataAccessException("Error verifying user data", e);
-        }
-    }
-
-    @Override
     public List<UserData> getAllUsers() throws DataAccessException {
         List<UserData> userList = new ArrayList<>();
         String query = "SELECT * FROM User";

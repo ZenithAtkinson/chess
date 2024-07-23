@@ -3,6 +3,7 @@ package service;
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
+import model.AuthData;
 import model.UserData;
 import request.RegisterRequest;
 import response.RegisterResult;
@@ -17,10 +18,23 @@ public class RegisterService {
     }
 
     public RegisterResult register(RegisterRequest request) throws DataAccessException {
-        if (userDAO.usernameExists(request.username())) {
-            throw new DataAccessException("User already exists");
+        if (request.getUsername() == null || request.getPassword() == null || request.getEmail() == null) {
+            throw new DataAccessException("Error: Missing required fields");
         }
 
-        // Proceed with registration logic...
+        UserData existingUser = userDAO.getUser(request.getUsername());
+        if (existingUser != null) {
+            throw new DataAccessException("Error: User already exists");
+        }
+
+        UserData newUser = new UserData(request.getUsername(), request.getPassword(), request.getEmail());
+        if (userDAO.addUser(newUser)) {
+            String authToken = authDAO.generateAuthToken(newUser.getUsername());
+            AuthData authData = new AuthData(authToken, newUser.getUsername());
+            authDAO.addAuthData(authData);
+            return new RegisterResult(newUser.getUsername(), authToken);
+        } else {
+            throw new DataAccessException("Error: Failed to register user");
+        }
     }
 }

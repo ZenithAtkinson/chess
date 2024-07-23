@@ -10,6 +10,7 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import service.ClearService;
+import service.RegisterService;
 
 public class Server {
 
@@ -20,15 +21,16 @@ public class Server {
         // Set the location for static files
         Spark.staticFiles.location("web");
 
-
-        // Register your endpoints and handle exceptions here.
         // Initialize DAOs with concrete implementations
         UserDAO userDAO = new MemoryUserDAO();
         GameDAO gameDAO = new MemoryGameDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
 
+        // Initialize services
+        RegisterService registerService = new RegisterService(userDAO, authDAO);
+
         // Register handlers
-        Spark.post("/user", new RegisterHandler(userDAO, authDAO));
+        Spark.post("/user", new RegisterHandler(registerService));
         Spark.post("/session", new LoginHandler(userDAO, authDAO));
         Spark.delete("/session", new LogoutHandler(authDAO));
         Spark.get("/game", new ListGamesHandler(gameDAO, authDAO));

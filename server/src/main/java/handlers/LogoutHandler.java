@@ -1,8 +1,8 @@
 package handlers;
 
+import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import service.LogoutService;
-import com.google.gson.Gson;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -16,16 +16,33 @@ public class LogoutHandler implements Route {
     }
 
     @Override
-    public Object handle(Request request, Response response) throws Exception {
-        // Get the auth token from the header
-        String authToken = request.headers("Authorization");
+    public Object handle(Request req, Response res) throws Exception {
+        String authToken = req.headers("Authorization");
+        try {
+            logoutService.logout(authToken);
+            res.status(200);
+            return gson.toJson(new LogoutResponse(true, "Logged out successfully")); //ok
+        } catch (Exception e) {
+            res.status(401);
+            return gson.toJson(new LogoutResponse(false, "Error: Unauthorized")); //unauthorized
+        }
+    }
+    //Inner class for logout response
+    private static class LogoutResponse {
+        private boolean success;
+        private String message;
 
-        // Process the request
-        logoutService.logout(authToken);
+        public LogoutResponse(boolean success, String message) {
+            this.success = success;
+            this.message = message;
+        }
+        //Check if the logout was successful
+        public boolean isSuccess() {
+            return success;
+        }
 
-        // Return a success response
-        response.type("application/json");
-        response.status(200);
-        return gson.toJson(new Object());
+        public String getMessage() {
+            return message;
+        }
     }
 }

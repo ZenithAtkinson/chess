@@ -1,32 +1,62 @@
 package handlers;
 
+import com.google.gson.Gson;
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import response.ListGamesResult;
 import service.ListGamesService;
-import com.google.gson.Gson;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ListGamesHandler implements Route {
     private final ListGamesService listGamesService;
     private final Gson gson = new Gson();
-
+    private static final Logger logger = LoggerFactory.getLogger(ListGamesHandler.class);
+    //consturct
     public ListGamesHandler(GameDAO gameDAO, AuthDAO authDAO) {
         this.listGamesService = new ListGamesService(gameDAO, authDAO);
     }
 
     @Override
-    public Object handle(Request request, Response response) throws Exception {
-        // Get the auth token from the header
-        String authToken = request.headers("Authorization");
+    //Handle
+    public Object handle(Request req, Response res) {
+        // Get the authorization token from the request headers
+        String authToken = req.headers("Authorization");
 
-        // Process the request and get the result
-        ListGamesResult result = listGamesService.listGames(authToken); // Ensure this matches the return type
-
-        // Serialize the result object to JSON
-        response.type("application/json");
-        return gson.toJson(result);
+        try {
+            //service for listing
+            ListGamesResult result = listGamesService.listGames(authToken);
+            res.status(200); //OK
+            return gson.toJson(result); //JSON object
+        } catch (DataAccessException e) {
+            //start logging error messages
+            logger.error("Error during list games: {}", e.getMessage());
+            String errorMessage = e.getMessage().toLowerCase();
+            logger.error("Response error message: {}", errorMessage);
+            if (errorMessage.contains("unauthorized")) {
+                res.status(401);
+            } else if (errorMessage.contains("game not found")) {
+                res.status(404);
+            } else if (errorMessage.contains("invalid player color")) {
+                res.status(400);
+            } else if (errorMessage.contains("player color already taken")) {
+                res.status(409);
+            } else {
+                //System.out.println("Final check TEST");
+                res.status(500);
+                errorMessage = "Internal Server Error: " + errorMessage;
+            }
+            String responseBody = gson.toJson(new ResponseMessage("error: " + errorMessage));
+            res.body(responseBody);
+            logger.debug("Returning error response with message: {}", responseBody);
+            return res.body();
+        }
+    }
+    // Response message record class
+    private record ResponseMessage(String message) {
     }
 }

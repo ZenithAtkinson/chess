@@ -1,8 +1,8 @@
 package service;
 
 import dataaccess.AuthDAO;
-import dataaccess.GameDAO;
 import dataaccess.DataAccessException;
+import dataaccess.GameDAO;
 import model.AuthData;
 import model.GameData;
 import request.CreateGameRequest;
@@ -19,16 +19,13 @@ public class CreateGameService {
 
     public CreateGameResult createGame(CreateGameRequest request, String authToken) throws DataAccessException {
         AuthData authData = authDAO.getAuthData(authToken);
-        if (authData != null) {
-            if (request.getGameName() == null || request.getGameName().isEmpty()) {
-                throw new DataAccessException("Error: Game name cannot be null or empty");
-            }
-
-            GameData newGame = new GameData(0, authData.getUsername(), null, request.getGameName(), null);
-            gameDAO.addGame(newGame);
-            return new CreateGameResult(newGame.getGameID());
-        } else {
-            throw new DataAccessException("Error: unauthorized");
+        if (authData == null) {
+            throw new DataAccessException("Unauthorized");
         }
+
+        GameData game = new GameData(0, null, null, request.getGameName(), null);
+        gameDAO.addGame(game);
+
+        return new CreateGameResult(game.getGameID());
     }
 }

@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import dataaccess.AuthDAO;
 import model.AuthData;
@@ -17,14 +18,16 @@ public class UserService {
     }
 
     public RegisterResult register(RegisterRequest request) throws Exception {
-        UserData user = new UserData(request.username(), request.password(), request.email());
+        UserData user = new UserData(request.getUsername(), request.getPassword(), request.getEmail());
         if (userDAO.addUser(user)) {
             String authToken = generateAuthToken();
             AuthData authData = new AuthData(authToken, user.getUsername());
             authDAO.addAuthData(authData);
+            System.out.println("User registered: " + user.getUsername());
             return new RegisterResult(user.getUsername(), authToken);
         } else {
-            throw new Exception("User already exists");
+            System.out.println("User already exists: " + user.getUsername());
+            throw new DataAccessException("User already exists");  // Ensure this exception is thrown
         }
     }
 
@@ -32,3 +35,4 @@ public class UserService {
         return java.util.UUID.randomUUID().toString();
     }
 }
+
