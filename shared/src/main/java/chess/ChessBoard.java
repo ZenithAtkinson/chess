@@ -18,10 +18,10 @@ public class ChessBoard {
     public ChessBoard() {
 
     }
-    public ChessBoard(ChessBoard Copy) {
+    public ChessBoard(ChessBoard copy) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                ChessPiece piece = Copy.getPiece(new ChessPosition(row + 1, col + 1));
+                ChessPiece piece = copy.getPiece(new ChessPosition(row + 1, col + 1));
                 if (piece != null) {
                     this.squares[row][col] = new ChessPiece(piece.getTeamColor(), piece.getPieceType());
                 }

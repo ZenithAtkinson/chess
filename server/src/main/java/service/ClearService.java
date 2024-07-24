@@ -12,7 +12,7 @@ public class ClearService {
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
     //For debugging stuff
-    private static final Logger logger = LoggerFactory.getLogger(ClearService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClearService.class);
 
     //main DAO data
     public ClearService(UserDAO userDAO, GameDAO gameDAO, AuthDAO authDAO) {
@@ -23,12 +23,12 @@ public class ClearService {
 
     //clearing, debug statements for each CLEAR
     public void clear() throws DataAccessException {
-        logger.debug("Clearing all user data");
+        LOGGER.debug("Clearing all user data");
         userDAO.clear();
-        logger.debug("Clearing all game data");
+        LOGGER.debug("Clearing all game data");
         gameDAO.clear();
-        logger.debug("Clearing all auth data");
+        LOGGER.debug("Clearing all auth data");
         authDAO.clear();
-        logger.debug("All data cleared");
+        LOGGER.debug("All data cleared");
     }
 }

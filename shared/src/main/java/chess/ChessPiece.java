@@ -6,7 +6,6 @@ import java.util.Objects;
 
 import static chess.ChessGame.TeamColor.BLACK;
 import static chess.ChessGame.TeamColor.WHITE;
-
 /**
  * Represents a single chess piece
  * <p>
@@ -22,7 +21,6 @@ public class ChessPiece {
         this.pieceColor = pieceColor;
         this.type = type;
     }
-
     /**
      * The various different chess piece options
      */
@@ -34,7 +32,6 @@ public class ChessPiece {
         ROOK,
         PAWN
     }
-
     /**
      * @return Which team this chess piece belongs to
      */
@@ -273,7 +270,6 @@ public class ChessPiece {
             }
         }
     }
-
     private void pawnValidMoves(Collection<ChessMove> validMoves, ChessBoard board, ChessPosition myPosition){
 
         ChessGame.TeamColor color = board.getPiece(myPosition).getTeamColor();
@@ -317,8 +313,6 @@ public class ChessPiece {
                 }
             }
         }
-
-
         if (color == BLACK){
             //Check for piece straight ahead.
             newPosition = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn());
@@ -355,25 +349,19 @@ public class ChessPiece {
                 }
             }
         }
-
         //Check if first space ahead is valid.
         //if it is, check if we are on a starter row for given color. if so, check if two spots ahead are valid and
         // add if it is.
-
         //Check diagonals for attacks. Remeber to also use the valid move checker for a promotion piece.
-
     }
-
     private void diagonalMoves(Collection<ChessMove> validMoves, ChessBoard board, ChessPosition myPosition){
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
-
         ChessMove move;
 
         //list of directions
         int [][] directions = {{1,1},{-1, 1},{-1, -1},{1, -1}};
         //clockwise directions, starting at top right
-
         //loop through directions
         for (int[] direction : directions){
             //for given int, col
@@ -457,14 +445,12 @@ public class ChessPiece {
             }
         }
     }
-
     private boolean moveIsValid(int row, int col){
         if ((row > 0 && row <= 8) &&(col > 0 && col <= 8)){
             return true;
         }
         return false;
     }
-
     private boolean enemyOccupiedSpace(ChessBoard board, ChessPosition newPosition, ChessGame.TeamColor color){
         if (board.getPiece(newPosition) != null){
             if(board.getPiece(newPosition).getTeamColor() != color) {
@@ -473,7 +459,6 @@ public class ChessPiece {
         }
         return false;
     }
-
     private void pawnAddMoves(Collection<ChessMove> validMoves, ChessBoard board, ChessPosition myPosition,
                               ChessPosition newPosition){ //DONT call this if space is not valid
         ChessMove move;
@@ -485,20 +470,17 @@ public class ChessPiece {
             validMoves.add(move);
         }
     }
-
-    private void pawnPromotionPieces(Collection<ChessMove> validMoves, ChessPosition start_position, ChessPosition
-            end_position){
-        ChessMove move = new ChessMove(start_position, end_position, PieceType.QUEEN);
+    private void pawnPromotionPieces(Collection<ChessMove> validMoves, ChessPosition startPosition, ChessPosition
+            endPosition){
+        ChessMove move = new ChessMove(startPosition, endPosition, PieceType.QUEEN);
         validMoves.add(move);
-        move = new ChessMove(start_position, end_position, PieceType.BISHOP);
+        move = new ChessMove(startPosition, endPosition, PieceType.BISHOP);
         validMoves.add(move);
-        move = new ChessMove(start_position, end_position, PieceType.KNIGHT);
+        move = new ChessMove(startPosition, endPosition, PieceType.KNIGHT);
         validMoves.add(move);
-        move = new ChessMove(start_position, end_position, PieceType.ROOK);
+        move = new ChessMove(startPosition, endPosition, PieceType.ROOK);
         validMoves.add(move);
     }
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -510,7 +492,6 @@ public class ChessPiece {
         ChessPiece that = (ChessPiece) o;
         return pieceColor == that.pieceColor && type == that.type;
     }
-
     @Override
     public int hashCode() {
         return Objects.hash(pieceColor, type);

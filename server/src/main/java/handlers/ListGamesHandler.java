@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public class ListGamesHandler implements Route {
     private final ListGamesService listGamesService;
     private final Gson gson = new Gson();
-    private static final Logger logger = LoggerFactory.getLogger(ListGamesHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ListGamesHandler.class);
     //consturct
     public ListGamesHandler(GameDAO gameDAO, AuthDAO authDAO) {
         this.listGamesService = new ListGamesService(gameDAO, authDAO);
@@ -34,9 +34,9 @@ public class ListGamesHandler implements Route {
             return gson.toJson(result); //JSON object
         } catch (DataAccessException e) {
             //start logging error messages
-            logger.error("Error during list games: {}", e.getMessage());
+            LOGGER.error("Error during list games: {}", e.getMessage());
             String errorMessage = e.getMessage().toLowerCase();
-            logger.error("Response error message: {}", errorMessage);
+            LOGGER.error("Response error message: {}", errorMessage);
             if (errorMessage.contains("unauthorized")) {
                 res.status(401);
             } else if (errorMessage.contains("game not found")) {
@@ -52,7 +52,7 @@ public class ListGamesHandler implements Route {
             }
             String responseBody = gson.toJson(new ResponseMessage("error: " + errorMessage));
             res.body(responseBody);
-            logger.debug("Returning error response with message: {}", responseBody);
+            LOGGER.debug("Returning error response with message: {}", responseBody);
             return res.body();
         }
     }

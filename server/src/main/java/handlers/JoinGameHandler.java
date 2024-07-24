@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public class JoinGameHandler implements Route {
     private final JoinGameService joinGameService;
     private final Gson gson = new Gson();
-    private static final Logger logger = LoggerFactory.getLogger(JoinGameHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JoinGameHandler.class);
 
     public JoinGameHandler(GameDAO gameDAO, AuthDAO authDAO) {
         this.joinGameService = new JoinGameService(gameDAO, authDAO);
@@ -30,15 +30,15 @@ public class JoinGameHandler implements Route {
 
         try {
             //LOG ALL THE ERRORS, for the test cases that don't work
-            logger.debug("Handling join game request: {}", request);
+            LOGGER.debug("Handling join game request: {}", request);
             // Call the service to join the game
             joinGameService.joinGame(request, authToken);
             res.status(200);
             return gson.toJson(new ResponseMessage("Game joined successfully"));
         } catch (DataAccessException e) {
-            logger.error("Error during join game: {}", e.getMessage());
+            LOGGER.error("Error during join game: {}", e.getMessage());
             String errorMessage = e.getMessage();
-            logger.error("Response error message: {}", errorMessage);
+            LOGGER.error("Response error message: {}", errorMessage);
             switch (errorMessage) {
                 case "Unauthorized":
                     res.status(401);
@@ -59,7 +59,7 @@ public class JoinGameHandler implements Route {
             }
             String responseBody = gson.toJson(new ResponseMessage("error: " + errorMessage));
             res.body(responseBody);
-            logger.debug("Returning error response with message: {}", responseBody);
+            LOGGER.debug("Returning error response with message: {}", responseBody);
             return res.body();
         }
     }

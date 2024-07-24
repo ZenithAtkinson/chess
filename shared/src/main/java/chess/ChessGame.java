@@ -83,12 +83,7 @@ public class ChessGame {
                 iterator.remove();
             }
         }
-        /*for (ChessMove move : allMoves) {
-            //For TA's: how does this method work with makeMove?
-            if (isMoveLegal(move)) { //valid moves is checking if it leads to a check/checkmate
-                validMoves.add(move);
-            }
-        }*/
+
         return validMoves;
     }
 
@@ -155,24 +150,26 @@ public class ChessGame {
     }
 
     // checking if a team is in check on the board
+    // checking if a team is in check on the board
     public static boolean isInCheck(TeamColor teamColor, ChessBoard board) {
         ChessPosition theKing = getKing(teamColor, board);
-        if (theKing == null) {
+        if (theKing == null || board.getPiece(theKing) == null) {
             return false;
         }
-        if(board.getPiece(theKing) == null){
-            return false;
-        }
+
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
-                if (piece != null) {if (piece.getTeamColor() != teamColor){
-                    for (ChessMove move : piece.pieceMoves(board, position)) {if (move.getEndPosition().equals(theKing)){
+
+                if (piece == null || piece.getTeamColor() == teamColor) {
+                    continue;
+                }
+
+                for (ChessMove move : piece.pieceMoves(board, position)) {
+                    if (move.getEndPosition().equals(theKing)) {
                         return true;
                     }
-                    }
-                }
                 }
             }
         }
@@ -289,7 +286,6 @@ public class ChessGame {
 
     //private ChessBoard cloneBoard(ChessBoard originalBoard) { //deep copy of ChessBoard
     //moved to just the board class
-
 
     @Override
     public int hashCode() {

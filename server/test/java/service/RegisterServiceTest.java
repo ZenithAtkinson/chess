@@ -50,24 +50,6 @@ public class RegisterServiceTest {
             registerService.register(request);
         });
     }
-    /*
-    @Test
-    public void testRegisterSuccess() throws Exception {
-        RegisterRequest request = new RegisterRequest("newUser", "password", "new@example.com");
-        RegisterResult result = userService.register(request);
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals("newUser", result.username());
-        Assertions.assertNotNull(result.authToken());
-    }*/
-
-    /*@Test
-    public void testRegisterFailure() throws DataAccessException {
-        userDAO.addUser(new UserData("existingUser", "password", "existing@example.com"));
-        RegisterRequest request = new RegisterRequest("existingUser", "password", "existing@example.com");
-        Assertions.assertThrows(Exception.class, () -> {
-            userService.register(request);
-        });
-    }*/
 }
 
 
