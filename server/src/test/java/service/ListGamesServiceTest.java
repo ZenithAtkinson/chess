@@ -31,11 +31,11 @@ public class ListGamesServiceTest {
 
     @Test
     public void listGamesPass() throws Exception {
-        // Add an auth token
+        //Add auth token
         AuthData authData = new AuthData("authToken", "testUser");
         authDAO.addAuthData(authData);
 
-        // Add a game
+        //Add game
         GameData gameData = new GameData(1, "testUser", null, "testGame", null);
         gameDAO.addGame(gameData);
 

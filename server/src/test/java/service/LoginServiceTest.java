@@ -28,7 +28,7 @@ public class LoginServiceTest {
     @BeforeEach
     public void setUp() throws DataAccessException {
         loginService = new LoginService(userDAO, authDAO);
-        // Add a test user before each test
+        //Add test user before each
         userDAO.addUser(new UserData("testUser", "password", "test@example.com"));
     }
 

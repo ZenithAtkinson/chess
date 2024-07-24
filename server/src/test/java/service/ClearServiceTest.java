@@ -6,7 +6,7 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
-import dataaccess.DataAccessException; // Import this
+import dataaccess.DataAccessException; //Import this
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ public class ClearServiceTest {
     @Test
     public void testClearSuccess() throws DataAccessException {
         clearService.clear();
-        // Verify that all data has been cleared
+        //Verify that all data has been cleared
         Assertions.assertTrue(userDAO.getAllUsers().isEmpty());
         Assertions.assertTrue(gameDAO.getAllGames().isEmpty());
         Assertions.assertTrue(authDAO.getAllAuthData().isEmpty());

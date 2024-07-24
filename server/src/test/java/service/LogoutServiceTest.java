@@ -25,13 +25,13 @@ public class LogoutServiceTest {
 
     @Test
     public void logoutPass() throws Exception {
-        // Add an auth token
+        //Add auth token
         AuthData authData = new AuthData("authToken", "testUser");
         authDAO.addAuthData(authData);
 
         logoutService.logout("authToken");
 
-        // Verify the auth token was removed
+        //Verify  auth token was removed
         AuthData removedAuthData = authDAO.getAuthData("authToken");
         Assertions.assertNull(removedAuthData);
     }

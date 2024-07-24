@@ -31,18 +31,18 @@ public class JoinGameServiceTest {
 
     @Test
     public void joinGamePass() throws Exception {
-        // Add a game to join
+        //Add game to join
         GameData gameData = new GameData(1, null, null, "testGame", null);
         gameDAO.addGame(gameData);
 
-        // Add an auth token
+        //Add auth token
         AuthData authData = new AuthData("authToken", "testUser");
         authDAO.addAuthData(authData);
 
         JoinGameRequest request = new JoinGameRequest(1, "WHITE");
         joinGameService.joinGame(request, "authToken");
 
-        // Verify the game was updated
+        //Verify updated
         GameData updatedGame = gameDAO.getGame(1);
         Assertions.assertEquals("testUser", updatedGame.getWhiteUsername());
     }
