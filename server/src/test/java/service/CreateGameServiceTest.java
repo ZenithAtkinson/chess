@@ -44,8 +44,7 @@ public class CreateGameServiceTest {
     @Test
     public void createGameFailure() {
         //CreateGameRequest request = new CreateGameRequest(null); // Invalid request with null game name
-        //Assertions.assertThrows(DataAccessException.class, () -> {
-        //    createGameService.createGame(request, "authToken");
-        //});
+        //Assertions.assertThrows(DataAccessException.class, () -> {//    createGameService.createGame(request,
+        // "authToken");//});
     }
 }

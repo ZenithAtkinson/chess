@@ -47,7 +47,7 @@ public class RegisterServiceTest {
         UserData user = new UserData("testUser", "password", "email@mail.com");
         userDAO.addUser(user);
 
-        RegisterRequest request = new RegisterRequest("testUser", "password", "email@mail.com"); // Duplicate user
+        RegisterRequest request = new RegisterRequest("testUser", "password", "email@mail.com");
         Assertions.assertThrows(DataAccessException.class, () -> {
             registerService.register(request);
         });
