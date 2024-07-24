@@ -21,23 +21,24 @@ public class LogoutServiceTest {
     @BeforeEach
     public void setUp() throws DataAccessException {
         logoutService = new LogoutService(authDAO);
+    }
 
-        // Add a valid authToken to the authDAO
+    @Test
+    public void logoutPass() throws Exception {
+        // Add an auth token
         AuthData authData = new AuthData("authToken", "testUser");
         authDAO.addAuthData(authData);
-    }
 
-    @Test
-    public void testLogoutSuccess() throws Exception {
-        // Assuming auth token "authToken" exists
         logoutService.logout("authToken");
-        // Verify that the authToken has been removed
-        Assertions.assertNull(authDAO.getAuthData("authToken"));
+
+        // Verify the auth token was removed
+        AuthData removedAuthData = authDAO.getAuthData("authToken");
+        Assertions.assertNull(removedAuthData);
     }
 
     @Test
-    public void testLogoutFailure() {
-        Assertions.assertThrows(Exception.class, () -> {
+    public void logoutFail() {
+        Assertions.assertThrows(DataAccessException.class, () -> {
             logoutService.logout("invalidAuthToken");
         });
     }

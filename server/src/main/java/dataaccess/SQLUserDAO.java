@@ -79,18 +79,4 @@ public class SQLUserDAO implements UserDAO {
     }
 
     //Extra create the User table if it DON't exist
-    public void createTable() throws DataAccessException {
-        String query = """
-            CREATE TABLE IF NOT EXISTS User (
-                username VARCHAR(255) NOT NULL PRIMARY KEY,
-                password VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-        """;
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException("Error creating User table", e);
-        }
-    }
 }

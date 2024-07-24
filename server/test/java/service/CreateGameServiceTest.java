@@ -5,7 +5,6 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.GameDAO;
 import dataaccess.DataAccessException;
-import model.AuthData;
 import model.GameData;
 import request.CreateGameRequest;
 import response.CreateGameResult;
@@ -18,7 +17,6 @@ public class CreateGameServiceTest {
     private CreateGameService createGameService;
     private static GameDAO gameDAO;
     private static AuthDAO authDAO;
-    private static final String AUTH_TOKEN = "authToken";
 
     @BeforeAll
     public static void setUpAll() {
@@ -29,22 +27,21 @@ public class CreateGameServiceTest {
     @BeforeEach
     public void setUp() throws DataAccessException {
         createGameService = new CreateGameService(gameDAO, authDAO);
-        authDAO.addAuthData(new AuthData(AUTH_TOKEN, "testUser"));
     }
 
     @Test
-    public void testCreateGameSuccess() throws Exception {
-        CreateGameRequest request = new CreateGameRequest("newGame");
-        CreateGameResult result = createGameService.createGame(request, AUTH_TOKEN);
+    public void createGamePass() throws Exception {
+        CreateGameRequest request = new CreateGameRequest("testGame");
+        CreateGameResult result = createGameService.createGame(request, "authToken");
         Assertions.assertNotNull(result);
         Assertions.assertTrue(result.getGameID() > 0);
     }
 
     @Test
-    public void testCreateGameFailure() {
-        CreateGameRequest request = new CreateGameRequest(null); // Invalid request with null game name
-        Assertions.assertThrows(Exception.class, () -> {
-            createGameService.createGame(request, AUTH_TOKEN);
+    public void createGameFailure() {
+        CreateGameRequest request = new CreateGameRequest(null); //Invalid request with null game name
+        Assertions.assertThrows(DataAccessException.class, () -> {
+            createGameService.createGame(request, "authToken");
         });
     }
 }

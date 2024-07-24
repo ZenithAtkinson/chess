@@ -5,9 +5,9 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.GameDAO;
 import dataaccess.DataAccessException;
+import response.ListGamesResult;
 import model.AuthData;
 import model.GameData;
-import response.ListGamesResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,26 +27,26 @@ public class ListGamesServiceTest {
     @BeforeEach
     public void setUp() throws DataAccessException {
         listGamesService = new ListGamesService(gameDAO, authDAO);
+    }
 
-        // Add a valid authToken to the authDAO
+    @Test
+    public void listGamesPass() throws Exception {
+        // Add an auth token
         AuthData authData = new AuthData("authToken", "testUser");
         authDAO.addAuthData(authData);
 
-        // Add a game to the gameDAO
+        // Add a game
         GameData gameData = new GameData(1, "testUser", null, "testGame", null);
         gameDAO.addGame(gameData);
-    }
 
-    @Test
-    public void testListGamesSuccess() throws Exception {
         ListGamesResult result = listGamesService.listGames("authToken");
         Assertions.assertNotNull(result);
-        Assertions.assertTrue(result.games().size() >= 0); // Should return an empty list or more
+        Assertions.assertTrue(result.games().size() >= 0);
     }
 
     @Test
-    public void testListGamesFailure() {
-        Assertions.assertThrows(Exception.class, () -> {
+    public void listGamesFail() {
+        Assertions.assertThrows(DataAccessException.class, () -> {
             listGamesService.listGames("invalidAuthToken");
         });
     }

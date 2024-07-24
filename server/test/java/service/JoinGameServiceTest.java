@@ -27,29 +27,31 @@ public class JoinGameServiceTest {
     @BeforeEach
     public void setUp() throws DataAccessException {
         joinGameService = new JoinGameService(gameDAO, authDAO);
+    }
 
-        // Add a valid authToken to the authDAO
+    @Test
+    public void joinGamePass() throws Exception {
+        // Add a game to join
+        GameData gameData = new GameData(1, null, null, "testGame", null);
+        gameDAO.addGame(gameData);
+
+        // Add an auth token
         AuthData authData = new AuthData("authToken", "testUser");
         authDAO.addAuthData(authData);
 
-        // Add a game to the gameDAO
-        GameData gameData = new GameData(1, null, null, "newGame", null);
-        gameDAO.addGame(gameData);
-    }
-
-    /*@Test
-    public void testJoinGameSuccess() throws Exception {
-        // Assuming there's a game with ID 1
         JoinGameRequest request = new JoinGameRequest(1, "WHITE");
         joinGameService.joinGame(request, "authToken");
-        // Add assertions as needed
-    }*/
 
-    /*@Test
-    public void testJoinGameFailure() {
+        // Verify the game was updated
+        GameData updatedGame = gameDAO.getGame(1);
+        Assertions.assertEquals("testUser", updatedGame.getWhiteUsername());
+    }
+
+    @Test
+    public void joinGameFail() {
         JoinGameRequest request = new JoinGameRequest(-1, "WHITE"); // Invalid game ID
-        Assertions.assertThrows(Exception.class, () -> {
+        Assertions.assertThrows(DataAccessException.class, () -> {
             joinGameService.joinGame(request, "authToken");
         });
-    }*/
+    }
 }

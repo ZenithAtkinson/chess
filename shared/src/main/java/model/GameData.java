@@ -15,7 +15,7 @@ public class GameData {
         this.additionalParameter = additionalParameter;
     }
 
-    // Getters and setters
+    //Getters and setters
     public int getGameID() {
         return gameID;
     }
@@ -47,12 +47,4 @@ public class GameData {
     public void setGameName(String gameName) {
         this.gameName = gameName;
     }
-
-    /*public Object getChessGame() {
-        return chessGame;
-    }
-
-    public void setChessGame(Object chessGame) {
-        this.chessGame = chessGame;
-    }*/
 }

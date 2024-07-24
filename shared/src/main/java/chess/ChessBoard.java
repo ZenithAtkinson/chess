@@ -18,10 +18,10 @@ public class ChessBoard {
     public ChessBoard() {
 
     }
-    public ChessBoard(ChessBoard COPY) {
+    public ChessBoard(ChessBoard Copy) {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                ChessPiece piece = COPY.getPiece(new ChessPosition(row + 1, col + 1));
+                ChessPiece piece = Copy.getPiece(new ChessPosition(row + 1, col + 1));
                 if (piece != null) {
                     this.squares[row][col] = new ChessPiece(piece.getTeamColor(), piece.getPieceType());
                 }
@@ -31,8 +31,12 @@ public class ChessBoard {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ChessBoard that = (ChessBoard) o;
         return Objects.deepEquals(squares, that.squares);
     }

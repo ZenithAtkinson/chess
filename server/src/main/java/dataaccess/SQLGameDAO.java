@@ -88,20 +88,6 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
-    public boolean deleteGame(int gameID) throws DataAccessException {
-        String sql = "DELETE FROM Games WHERE gameID = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, gameID);
-
-            stmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new DataAccessException("Error encountered while deleting game from the database");
-        }
-    }
-
-    @Override
     public void clear() throws DataAccessException {
         String sql = "DELETE FROM Games";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {

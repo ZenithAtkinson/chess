@@ -37,16 +37,6 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    // Delete a game by its ID
-    public boolean deleteGame(int gameID) {
-        if (!games.containsKey(gameID)) {
-            return false;
-        }
-        games.remove(gameID);
-        return true;
-    }
-
-    @Override
     // Clear all games from memory
     public void clear() {
         games.clear();
