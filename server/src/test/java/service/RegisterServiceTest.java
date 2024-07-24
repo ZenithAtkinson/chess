@@ -27,6 +27,8 @@ public class RegisterServiceTest {
     @BeforeEach
     public void setUp() throws DataAccessException {
         registerService = new RegisterService(userDAO, authDAO);
+        // Clear any existing users for each test to start with a clean state
+        userDAO.clear();
     }
 
     @Test
@@ -51,5 +53,3 @@ public class RegisterServiceTest {
         });
     }
 }
-
-
