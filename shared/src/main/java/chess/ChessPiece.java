@@ -102,6 +102,7 @@ public class ChessPiece {
         }
 
         addPawnCaptureMoves(validMoves, board, myPosition, direction, promotionRow);
+
     }
 
     private void addPawnCaptureMoves(Collection<ChessMove> validMoves, ChessBoard board, ChessPosition myPosition, int direction, int promotionRow) {
