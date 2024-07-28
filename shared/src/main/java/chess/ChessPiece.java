@@ -118,6 +118,7 @@ public class ChessPiece {
         }
     }
 
+
     private void addSingleStepMoves(Collection<ChessMove> validMoves, ChessBoard board, ChessPosition myPosition, int[][] directions) {
         ChessGame.TeamColor color = board.getPiece(myPosition).getTeamColor();
         for (int[] direction : directions) {
