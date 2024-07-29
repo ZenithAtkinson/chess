@@ -9,9 +9,6 @@ public class DatabaseManager {
     private static final String PASSWORD;
     private static final String CONNECTION_URL;
 
-    /*
-     * Load the database information for the db.properties file.
-     */
     static {
         try {
             try (var propStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("db.properties")) {
@@ -29,7 +26,7 @@ public class DatabaseManager {
                 CONNECTION_URL = String.format("jdbc:mysql://%s:%d", host, port);
             }
         } catch (Exception ex) {
-            throw new RuntimeException("unable to process db.properties. " + ex.getMessage());
+            throw new RuntimeException("Unable to process db.properties. " + ex.getMessage());
         }
     }
 
@@ -39,9 +36,47 @@ public class DatabaseManager {
     static void createDatabase() throws DataAccessException {
         try {
             var statement = "CREATE DATABASE IF NOT EXISTS " + DATABASE_NAME;
-            var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
-            try (var preparedStatement = conn.prepareStatement(statement)) {
+            try (var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
+                 var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    /**
+     * Initializes the database by creating necessary tables if they do not exist.
+     */
+    static void initializeDatabase() throws DataAccessException {
+        createDatabase();
+        try (var conn = getConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                String createUserTable = "CREATE TABLE IF NOT EXISTS users (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "username VARCHAR(255) NOT NULL," +
+                        "password VARCHAR(255) NOT NULL," +
+                        "email VARCHAR(255) NOT NULL)";
+                stmt.executeUpdate(createUserTable);
+
+                String createAuthTokenTable = "CREATE TABLE IF NOT EXISTS auth_tokens (" +
+                        "token VARCHAR(255) PRIMARY KEY," +
+                        "username VARCHAR(255) NOT NULL)";
+                stmt.executeUpdate(createAuthTokenTable);
+
+                String createGameTable = "CREATE TABLE IF NOT EXISTS games (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "name VARCHAR(255) NOT NULL," +
+                        "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
+                stmt.executeUpdate(createGameTable);
+
+                String createMoveTable = "CREATE TABLE IF NOT EXISTS moves (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "game_id INT," +
+                        "move VARCHAR(255) NOT NULL," +
+                        "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                        "FOREIGN KEY (game_id) REFERENCES games(id))";
+                stmt.executeUpdate(createMoveTable);
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
