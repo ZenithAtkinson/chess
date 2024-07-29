@@ -5,6 +5,7 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import response.LoginResult;
 
@@ -22,8 +23,8 @@ public class LoginService {
         // Get the user data from store
         UserData user = userDAO.getUser(request.username());
         // Validate credentials
-        if (user != null && user.getPassword().equals(request.password())) {
-            // Generateauth token
+        if (user != null && BCrypt.checkpw(request.password(), user.getPassword())) {
+            // Generate auth token
             String authToken = generateAuthToken();
             // Create auth data and add it to the data store
             AuthData authData = new AuthData(authToken, user.getUsername());
@@ -35,10 +36,8 @@ public class LoginService {
         }
     }
 
-    //unique toek from randomUUID
+    // Unique token from randomUUID
     private String generateAuthToken() {
         return java.util.UUID.randomUUID().toString();
     }
 }
-
-

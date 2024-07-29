@@ -1,11 +1,9 @@
 package dataaccess;
 
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +17,11 @@ public class SQLUserDAO implements UserDAO {
             stmt.setString(1, username);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return new UserData(rs.getString("username"), rs.getString("password"), rs.getString("email"));
+                    return new UserData(
+                            rs.getString("username"),
+                            rs.getString("password"), // Hashed password
+                            rs.getString("email")
+                    );
                 }
             }
         } catch (SQLException e) {
@@ -30,11 +32,15 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public boolean addUser(UserData user) throws DataAccessException {
+        if (getUser(user.getUsername()) != null) {
+            throw new DataAccessException("Username already exists");
+        }
+
         String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getPassword());
+            stmt.setString(2, BCrypt.hashpw(user.getPassword(), BCrypt.gensalt())); // Hash the password before storing
             stmt.setString(3, user.getEmail());
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -62,7 +68,11 @@ public class SQLUserDAO implements UserDAO {
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                users.add(new UserData(rs.getString("username"), rs.getString("password"), rs.getString("email")));
+                users.add(new UserData(
+                        rs.getString("username"),
+                        rs.getString("password"), // Hashed password
+                        rs.getString("email")
+                ));
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error retrieving all users", e);
