@@ -5,95 +5,119 @@ import com.google.gson.Gson;
 import model.GameData;
 import org.junit.jupiter.api.*;
 
-import java.util.Collection;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SQLGameDAOTest {
-    private static DatabaseManager dbManager;
-    private GameDAO gameDAO;
-    private Gson gson;
+    private static SQLGameDAO gameDAO;
+    private static Connection conn;
+    private static Gson gson;
 
     @BeforeAll
-    public static void setupClass() {
-        dbManager = new DatabaseManager();
-        dbManager.initialize(); // Ensure this method sets up the DB connection
-    }
-
-    @BeforeEach
-    public void setup() {
-        gameDAO = new SQLGameDAO();
+    public static void setup() throws SQLException, DataAccessException {
+        conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/chessdb", "username", "password");
+        gameDAO = new SQLGameDAO(conn);
         gson = new Gson();
-        try {
-            DatabaseManager.initializeDatabase(); // Use the static method from DatabaseManager to initialize the database
-            gameDAO.clear();
-        } catch (DataAccessException e) {
-            e.printStackTrace();
-            fail("Database initialization or clearing failed");
-        }
-    }
-
-    @Test
-    public void testSerialization() throws DataAccessException {
-        ChessGame originalGame = new ChessGame();
-        // You may set up other properties of the game as needed
-
-        // Save the game to the database with a specific ID
-        int gameId = 1; // Or generate it dynamically
-        gameDAO.addGameState(gameId, originalGame);
-
-        // Retrieve the game state from the database
-        ChessGame retrievedGame = ((SQLGameDAO) gameDAO).getGameState(gameId);
-        // Compare the JSON representations of the original and retrieved game states
-        assertEquals(gson.toJson(originalGame), gson.toJson(retrievedGame), "The retrieved game state should match the original");
-    }
-
-    @Test
-    public void testAddAndGetGame() throws DataAccessException {
-        GameData gameData = new GameData(1, "whitePlayer", "blackPlayer", "Test Game", "Additional Params");
-        gameDAO.addGame(gameData);
-
-        GameData retrievedGame = gameDAO.getGame(1);
-        assertEquals(gameData.getGameID(), retrievedGame.getGameID());
-        assertEquals(gameData.getWhiteUsername(), retrievedGame.getWhiteUsername());
-        assertEquals(gameData.getBlackUsername(), retrievedGame.getBlackUsername());
-        assertEquals(gameData.getGameName(), retrievedGame.getGameName());
-        assertEquals(gameData.getAdditionalParameter(), retrievedGame.getAdditionalParameter());
-    }
-
-    @Test
-    public void testUpdateGame() throws DataAccessException {
-        GameData gameData = new GameData(1, "whitePlayer", "blackPlayer", "Test Game", "Additional Params");
-        gameDAO.addGame(gameData);
-
-        gameData.setGameName("Updated Game");
-        gameDAO.updateGame(gameData);
-
-        GameData retrievedGame = gameDAO.getGame(1);
-        assertEquals("Updated Game", retrievedGame.getGameName());
-    }
-
-    @Test
-    public void testClear() throws DataAccessException {
-        GameData gameData1 = new GameData(1, "whitePlayer", "blackPlayer", "Test Game 1", "Additional Params 1");
-        GameData gameData2 = new GameData(2, "whitePlayer2", "blackPlayer2", "Test Game 2", "Additional Params 2");
-        gameDAO.addGame(gameData1);
-        gameDAO.addGame(gameData2);
-
         gameDAO.clear();
+    }
 
-        Collection<GameData> allGames = gameDAO.getAllGames();
-        assertTrue(allGames.isEmpty(), "Database should be empty after clear");
+    @AfterAll
+    public static void teardown() throws SQLException {
+        conn.close();
     }
 
     @Test
-    public void testGetAllGames() throws DataAccessException {
-        GameData gameData1 = new GameData(1, "whitePlayer", "blackPlayer", "Test Game 1", "Additional Params 1");
-        GameData gameData2 = new GameData(2, "whitePlayer2", "blackPlayer2", "Test Game 2", "Additional Params 2");
-        gameDAO.addGame(gameData1);
-        gameDAO.addGame(gameData2);
+    @Order(1)
+    public void testAddGame() throws DataAccessException {
+        GameData gameData = new GameData(1, "whiteUser", "blackUser", "Test Game", null);
+        ChessGame game = new ChessGame();
+        gameDAO.addGame(gameData, game);
+        ChessGame retrievedGame = gameDAO.getGame(1);
+        assertNotNull(retrievedGame);
+    }
 
-        Collection<GameData> allGames = gameDAO.getAllGames();
+    @Test
+    @Order(2)
+    public void testGetGame() throws DataAccessException {
+        ChessGame game = gameDAO.getGame(1);
+        assertNotNull(game);
+        assertEquals(ChessGame.TeamColor.WHITE, game.getTeamTurn());
+    }
+
+    @Test
+    @Order(3)
+    public void testGetGameNegative() {
+        assertThrows(DataAccessException.class, () -> gameDAO.getGame(999));
+    }
+
+    @Test
+    @Order(4)
+    public void testUpdateGame() throws DataAccessException {
+        GameData gameData = new GameData(1, "whiteUser", "blackUser", "Updated Game", null);
+        ChessGame game = gameDAO.getGame(1);
+        game.setTeamTurn(ChessGame.TeamColor.BLACK);
+        gameDAO.updateGame(gameData, game);
+        ChessGame updatedGame = gameDAO.getGame(1);
+        assertEquals(ChessGame.TeamColor.BLACK, updatedGame.getTeamTurn());
+    }
+
+    @Test
+    @Order(5)
+    public void testGetAllGames() throws DataAccessException {
+        GameData gameData2 = new GameData(2, "whiteUser2", "blackUser2", "Test Game 2", null);
+        ChessGame game2 = new ChessGame();
+        gameDAO.addGame(gameData2, game2);
+        List<GameData> allGames = gameDAO.getAllGames();
         assertEquals(2, allGames.size());
+    }
+
+    @Test
+    @Order(6)
+    public void testClear() throws DataAccessException {
+        gameDAO.clear();
+        List<GameData> allGames = gameDAO.getAllGames();
+        assertTrue(allGames.isEmpty());
+    }
+
+    @Test
+    @Order(7)
+    public void testAddGameState() throws DataAccessException {
+        GameData gameData = new GameData(3, "whiteUser3", "blackUser3", "Test Game 3", null);
+        ChessGame game = new ChessGame();
+        gameDAO.addGame(gameData, game);
+        ChessGame retrievedGame = gameDAO.getGame(3);
+        assertNotNull(retrievedGame);
+    }
+
+    @Test
+    @Order(8)
+    public void testGetGameState() throws DataAccessException {
+        ChessGame game = gameDAO.getGame(3);
+        assertNotNull(game);
+        assertEquals(ChessGame.TeamColor.WHITE, game.getTeamTurn());
+    }
+
+    @Test
+    @Order(9)
+    public void testUpdateGameState() throws DataAccessException {
+        GameData gameData = new GameData(3, "whiteUser3", "blackUser3", "Updated Game 3", null);
+        ChessGame game = gameDAO.getGame(3);
+        game.setTeamTurn(ChessGame.TeamColor.BLACK);
+        gameDAO.updateGame(gameData, game);
+        ChessGame updatedGame = gameDAO.getGame(3);
+        assertEquals(ChessGame.TeamColor.BLACK, updatedGame.getTeamTurn());
+    }
+
+    @Test
+    @Order(10)
+    public void testAddGameNegative() {
+        GameData gameData = new GameData(1, "whiteUser", "blackUser", "Test Game", null);
+        ChessGame game = new ChessGame();
+        assertThrows(DataAccessException.class, () -> gameDAO.addGame(gameData, game));
     }
 }

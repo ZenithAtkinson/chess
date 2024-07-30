@@ -1,5 +1,7 @@
 package chess;
 
+import model.GameData;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -43,6 +45,7 @@ public class ChessGame {
     public void setTeamTurn(TeamColor team) {
         currentTurn = team;
     }
+
 
     /**
      * Enum identifying the 2 possible teams in a chess game

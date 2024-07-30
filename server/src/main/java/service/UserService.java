@@ -1,26 +1,46 @@
 package service;
 
-import dataaccess.DataAccessException;
+import dataaccess.SQLUserDAO;
 import dataaccess.UserDAO;
-import dataaccess.AuthDAO;
-import model.AuthData;
 import model.UserData;
-import request.RegisterRequest;
-import response.RegisterResult;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class UserService {
     private final UserDAO userDAO;
-    private final AuthDAO authDAO;
+    private static final Logger logger = Logger.getLogger(UserService.class.getName());
 
-    public UserService(UserDAO userDAO, AuthDAO authDAO) {
-        this.userDAO = userDAO;
-        this.authDAO = authDAO;
+    public UserService() {
+        this.userDAO = new SQLUserDAO();
     }
 
-    //register result function needed here? See imports
+    public boolean register(UserData user) {
+        logger.log(Level.INFO, "Registering user: {0}", user.getUsername());
+        try {
+            return userDAO.addUser(user);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error registering user: " + e.getMessage(), e);
+            return false;
+        }
+    }
 
-    private String generateAuthToken() {
-        return java.util.UUID.randomUUID().toString();
+    public UserData getUser(String username) {
+        logger.log(Level.INFO, "Retrieving user: {0}", username);
+        try {
+            return userDAO.getUser(username);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error retrieving user: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    public void clear() {
+        logger.log(Level.INFO, "Clearing users");
+        try {
+            userDAO.clear();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error clearing users: " + e.getMessage(), e);
+        }
     }
 }
-
