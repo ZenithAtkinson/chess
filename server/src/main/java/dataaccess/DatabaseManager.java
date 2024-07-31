@@ -10,7 +10,7 @@ public class DatabaseManager {
     private static final String CONNECTION_URL;
 
     /*
-     * Load the database information for the db.properties file.
+     * Load the database information from the db.properties file.
      */
     static {
         try {
@@ -94,7 +94,7 @@ public class DatabaseManager {
                                     ")");
                     PreparedStatement createGames = conn.prepareStatement(
                             "CREATE TABLE games (" +
-                                    "id INT PRIMARY KEY, " +
+                                    "gameID INT PRIMARY KEY AUTO_INCREMENT, " +
                                     "whiteUsername VARCHAR(255), " +
                                     "blackUsername VARCHAR(255), " +
                                     "name VARCHAR(255), " +
@@ -106,9 +106,9 @@ public class DatabaseManager {
                     PreparedStatement createMoves = conn.prepareStatement(
                             "CREATE TABLE moves (" +
                                     "id INT PRIMARY KEY AUTO_INCREMENT, " +
-                                    "gameId INT, " +
+                                    "gameID INT, " +
                                     "move VARCHAR(255), " +
-                                    "FOREIGN KEY (gameId) REFERENCES games(id) ON DELETE CASCADE" +
+                                    "FOREIGN KEY (gameID) REFERENCES games(gameID) ON DELETE CASCADE" +
                                     ")")
             ) {
                 // Drop tables in correct order
