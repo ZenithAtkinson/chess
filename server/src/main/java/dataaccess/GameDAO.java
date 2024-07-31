@@ -1,18 +1,16 @@
 package dataaccess;
 
 import model.GameData;
-import chess.ChessGame;
 import java.util.Collection;
 
 public interface GameDAO {
+    // gets the GameData for a given gameId
     GameData getGame(int gameID) throws DataAccessException;
+    // adds the given GameData
     boolean addGame(GameData game) throws DataAccessException;
     boolean updateGame(GameData game) throws DataAccessException;
+    // deletes the GameData for a given gameId
+    //boolean deleteGame(int gameID) throws DataAccessException;
     void clear() throws DataAccessException;
     Collection<GameData> getAllGames() throws DataAccessException;
-
-    // Add the following methods
-    boolean addGameState(int gameID, ChessGame gameState) throws DataAccessException;
-    ChessGame getGameState(int gameID) throws DataAccessException;
-    boolean updateGameState(int gameID, ChessGame gameState) throws DataAccessException;
 }

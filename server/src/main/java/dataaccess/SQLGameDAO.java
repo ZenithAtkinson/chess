@@ -1,115 +1,123 @@
 package dataaccess;
 
-import chess.ChessGame;
-import com.google.gson.Gson;
 import model.GameData;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
-public class SQLGameDAO {
+public class SQLGameDAO implements GameDAO {
     private final Connection conn;
-    private final Gson gson;
 
     public SQLGameDAO(Connection conn) {
         this.conn = conn;
-        this.gson = new Gson();
     }
 
-    public void addGame(GameData gameData, ChessGame game) throws DataAccessException {
-        String sql = "INSERT INTO games (gameID, whiteUsername, blackUsername, name, gameState, additionalParameter) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            String gameStateJson = gson.toJson(game);
-            String additionalParamJson = gson.toJson(gameData.getAdditionalParameter());
+    @Override
+    public GameData getGame(int gameID) throws DataAccessException {
+        GameData game = null;
+        ResultSet rs = null;
+        String sql = "SELECT * FROM Games WHERE gameID = ?;";
 
-            stmt.setInt(1, gameData.getGameID());
-            stmt.setString(2, gameData.getWhiteUsername());
-            stmt.setString(3, gameData.getBlackUsername());
-            stmt.setString(4, gameData.getGameName());
-            stmt.setString(5, gameStateJson);
-            stmt.setString(6, additionalParamJson);
-
-            // Debug statements
-            System.out.println("Executing SQL: " + sql);
-            System.out.println("Parameters: ");
-            System.out.println("gameID: " + gameData.getGameID());
-            System.out.println("whiteUsername: " + gameData.getWhiteUsername());
-            System.out.println("blackUsername: " + gameData.getBlackUsername());
-            System.out.println("name: " + gameData.getGameName());
-            System.out.println("gameState: " + gameStateJson);
-            System.out.println("additionalParameter: " + additionalParamJson);
-
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("SQL Error Code: " + e.getErrorCode());
-            System.err.println("SQL State: " + e.getSQLState());
-            System.err.println("SQL Message: " + e.getMessage());
-            throw new DataAccessException("Error adding game", e);
-        }
-    }
-
-
-    public ChessGame getGame(int gameID) throws DataAccessException {
-        String sql = "SELECT gameState FROM games WHERE gameID = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, gameID);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return gson.fromJson(rs.getString("gameState"), ChessGame.class);
-                } else {
-                    throw new DataAccessException("Game not found");
-                }
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Error retrieving game", e);
-        }
-    }
-
-    public void updateGame(GameData gameData, ChessGame game) throws DataAccessException {
-        String sql = "UPDATE games SET gameState = ?, whiteUsername = ?, blackUsername = ?, name = ?, additionalParameter = ? WHERE gameID = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, gson.toJson(game));
-            stmt.setString(2, gameData.getWhiteUsername());
-            stmt.setString(3, gameData.getBlackUsername());
-            stmt.setString(4, gameData.getGameName());
-            stmt.setString(5, gson.toJson(gameData.getAdditionalParameter()));
-            stmt.setInt(6, gameData.getGameID());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DataAccessException("Error updating game", e);
-        }
-    }
-
-    public List<GameData> getAllGames() throws DataAccessException {
-        List<GameData> allGames = new ArrayList<>();
-        String sql = "SELECT gameID, whiteUsername, blackUsername, name, additionalParameter FROM games";
-        try (PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                GameData gameData = new GameData(
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                game = new GameData(
                         rs.getInt("gameID"),
                         rs.getString("whiteUsername"),
                         rs.getString("blackUsername"),
-                        rs.getString("name"),
-                        gson.fromJson(rs.getString("additionalParameter"), Object.class)
+                        rs.getString("gameName"),
+                        null // Assuming additional parameter is not needed from database
                 );
-                allGames.add(gameData);
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Error retrieving all games", e);
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while finding game");
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        return allGames;
+
+        return game;
     }
 
-    public void clear() throws DataAccessException {
-        try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("DELETE FROM moves");
-            stmt.executeUpdate("DELETE FROM games");
-            stmt.executeUpdate("DELETE FROM users");  // Clear users table as well
+    @Override
+    public boolean addGame(GameData game) throws DataAccessException {
+        String sql = "INSERT INTO Games (whiteUsername, blackUsername, gameName, additionalParameter) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, game.getWhiteUsername());
+            stmt.setString(2, game.getBlackUsername());
+            stmt.setString(3, game.getGameName());
+            //stmt.setObject(4, game.getAdditionalParameter()); /djust based on actual type
+            ////not implemented
+
+            stmt.executeUpdate();
+            return true;
         } catch (SQLException e) {
-            throw new DataAccessException("Error clearing tables", e);
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while inserting game into the database");
         }
     }
 
+    @Override
+    public boolean updateGame(GameData game) throws DataAccessException {
+        String sql = "UPDATE Games SET whiteUsername = ?, blackUsername = ?, gameName = ?, additionalParameter = ? WHERE gameID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, game.getWhiteUsername());
+            stmt.setString(2, game.getBlackUsername());
+            stmt.setString(3, game.getGameName());
+            //stmt.setObject(4, game.getAdditionalParameter()); //Adjust
+            //not implemented
+            stmt.setInt(5, game.getGameID());
+
+            stmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while updating game in the database");
+        }
+    }
+
+    @Override
+    public void clear() throws DataAccessException {
+        String sql = "DELETE FROM Games";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while clearing games from the database");
+        }
+    }
+
+    @Override
+    public Collection<GameData> getAllGames() throws DataAccessException {
+        Collection<GameData> games = new ArrayList<>();
+        String sql = "SELECT * FROM Games";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                GameData game = new GameData(
+                        rs.getInt("gameID"),
+                        rs.getString("whiteUsername"),
+                        rs.getString("blackUsername"),
+                        rs.getString("gameName"),
+                        null // Assuming additional parameter is not needed from database
+                );
+                games.add(game);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DataAccessException("Error encountered while getting all games from the database");
+        }
+        return games;
+    }
 }
