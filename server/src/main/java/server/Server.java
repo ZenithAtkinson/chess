@@ -23,7 +23,7 @@ public class Server {
 
         UserDAO userDAO = new SQLUserDAO(); // Change this to use the SQL DAOS. ONLY DIFFERENCE is this will be the SQLDAO's
         GameDAO gameDAO = new SQLGameDAO();
-        AuthDAO authDAO = new MemoryAuthDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
 
         //Initialize services
         RegisterService registerService = new RegisterService(userDAO, authDAO);

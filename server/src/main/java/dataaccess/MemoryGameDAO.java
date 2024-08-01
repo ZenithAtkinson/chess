@@ -10,13 +10,13 @@ public class MemoryGameDAO implements GameDAO {
     private int nextId = 1;
 
     @Override
-    // Get game by ID
+    //GET game by ID
     public GameData getGame(int gameID) {
         return games.get(gameID);
     }
 
     @Override
-    // Add a new game/memory
+    //Add a new game/memory
     public boolean addGame(GameData game) {
         if (games.containsKey(game.getGameID())) {
             return false;

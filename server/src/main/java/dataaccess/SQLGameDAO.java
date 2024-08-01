@@ -1,70 +1,82 @@
 package dataaccess;
 
 import model.GameData;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SQLGameDAO implements GameDAO {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SQLGameDAO.class);
-    private int nextId = 1;
+    private static final String CREATE_TABLE_STATEMENT = getCreateStatement();
+
+    private static String getCreateStatement() { // Every time a change is made, REMEMBER: drop the table again
+        return """
+            CREATE TABLE IF NOT EXISTS `game` (
+                `gameID` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                `gameName` VARCHAR(256) NOT NULL,
+                `whiteUsername` VARCHAR(64),
+                `blackUsername` VARCHAR(64),
+                `additionalParameter` VARCHAR(255) DEFAULT 'none' 
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """;
+    }
 
     public SQLGameDAO() {
         try {
             configureDatabase();
         } catch (DataAccessException e) {
-            LOGGER.error("Error configuring database: {}", e.getMessage());
+            System.out.println("Database unable to be configured: " + e.getMessage());
         }
     }
 
     private void configureDatabase() throws DataAccessException {
-        try (Connection conn = DatabaseManager.getConnection();
-             Statement stmt = conn.createStatement()) {
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS Games (" +
-                    "gameID INT PRIMARY KEY AUTO_INCREMENT, " +
-                    "whiteUsername VARCHAR(255) DEFAULT NULL, " +
-                    "blackUsername VARCHAR(255) DEFAULT NULL, " +
-                    "gameName VARCHAR(255) NOT NULL, " +
-                    "additionalParameter VARCHAR(255) NOT NULL)";
-            stmt.executeUpdate(createTableSQL);
-            setNextId();
-        } catch (SQLException e) {
-            LOGGER.error("Error configuring database: {}", e.getMessage());
-            throw new DataAccessException("Error encountered while configuring the database");
+        DatabaseManager.createDatabase();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statements = new String[]{CREATE_TABLE_STATEMENT};
+            for (var statement : statements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
 
-    private void setNextId() throws DataAccessException {
-        String sql = "SELECT MAX(gameID) AS maxID FROM Games";
+    @Override
+    public boolean addGame(GameData gameData) throws DataAccessException {
+        String sql = "INSERT INTO game (whiteUsername, blackUsername, gameName, additionalParameter) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                nextId = rs.getInt("maxID") + 1;
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, gameData.getWhiteUsername() != null ? gameData.getWhiteUsername() : null);
+            stmt.setString(2, gameData.getBlackUsername() != null ? gameData.getBlackUsername() : null);
+            stmt.setString(3, gameData.getGameName());
+            stmt.setString(4, gameData.getAdditionalParameter() != null ? gameData.getAdditionalParameter() : "none");
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new DataAccessException("Adding game failed, no rows affected.");
             }
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    gameData.setGameID(generatedKeys.getInt(1));
+                } else {
+                    throw new DataAccessException("Adding game failed, no ID obtained.");
+                }
+            }
+            return true;
         } catch (SQLException e) {
-            LOGGER.error("Error setting next ID: {}", e.getMessage());
-            throw new DataAccessException("Error encountered while setting next ID");
+            throw new DataAccessException("Error adding game", e);
         }
     }
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        GameData game = null;
-        String sql = "SELECT * FROM Games WHERE gameID = ?;";
-
+        String sql = "SELECT * FROM game WHERE gameID = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, gameID);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    game = new GameData(
+                    return new GameData(
                             rs.getInt("gameID"),
                             rs.getString("whiteUsername"),
                             rs.getString("blackUsername"),
@@ -74,115 +86,70 @@ public class SQLGameDAO implements GameDAO {
                 }
             }
         } catch (SQLException e) {
-            LOGGER.error("Error finding game with ID {}: {}", gameID, e.getMessage());
-            throw new DataAccessException("Error encountered while finding game");
+            throw new DataAccessException("Error getting game", e);
         }
-
-        return game;
+        return null;
     }
 
     @Override
-    public boolean addGame(GameData game) throws DataAccessException {
-        game.setGameID(nextId++);
-        if (game.getWhiteUsername() == null) game.setWhiteUsername("");
-        if (game.getBlackUsername() == null) game.setBlackUsername("");
-        if (game.getGameName() == null) game.setGameName("");
-        if (game.getAdditionalParameter() == null) game.setAdditionalParameter("");
-
-        String sql = "INSERT INTO Games (gameID, whiteUsername, blackUsername, gameName, additionalParameter) VALUES (?, ?, ?, ?, ?)";
+    public boolean updateGame(GameData gameData) throws DataAccessException {
+        String sql = "UPDATE game SET whiteUsername = ?, blackUsername = ?, gameName = ?, additionalParameter = ? WHERE gameID = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, game.getGameID());
-            stmt.setString(2, game.getWhiteUsername());
-            stmt.setString(3, game.getBlackUsername());
-            stmt.setString(4, game.getGameName());
-            stmt.setString(5, game.getAdditionalParameter());
-
-            stmt.executeUpdate();
-            LOGGER.debug("Added game: {}", game);
-            return true;
+            stmt.setString(1, gameData.getWhiteUsername());
+            stmt.setString(2, gameData.getBlackUsername());
+            stmt.setString(3, gameData.getGameName());
+            stmt.setString(4, gameData.getAdditionalParameter());
+            stmt.setInt(5, gameData.getGameID());
+            int rowsUpdated = stmt.executeUpdate();
+            return rowsUpdated > 0;
         } catch (SQLException e) {
-            LOGGER.error("Error adding game: {}", e.getMessage());
-            throw new DataAccessException("Error encountered while inserting game into the database");
-        }
-    }
-
-    @Override
-    public boolean updateGame(GameData game) throws DataAccessException {
-        if (game.getWhiteUsername() == null) game.setWhiteUsername("");
-        if (game.getBlackUsername() == null) game.setBlackUsername("");
-        if (game.getGameName() == null) game.setGameName("");
-        if (game.getAdditionalParameter() == null) game.setAdditionalParameter("");
-
-        String sql = "UPDATE Games SET whiteUsername = ?, blackUsername = ?, gameName = ?, additionalParameter = ? WHERE gameID = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, game.getWhiteUsername());
-            stmt.setString(2, game.getBlackUsername());
-            stmt.setString(3, game.getGameName());
-            stmt.setString(4, game.getAdditionalParameter());
-            stmt.setInt(5, game.getGameID());
-
-            stmt.executeUpdate();
-            LOGGER.debug("Updated game: {}", game);
-            return true;
-        } catch (SQLException e) {
-            LOGGER.error("Error updating game: {}", e.getMessage());
-            throw new DataAccessException("Error encountered while updating game in the database");
+            throw new DataAccessException("Error updating game", e);
         }
     }
 
     @Override
     public boolean deleteGame(int gameID) throws DataAccessException {
-        String sql = "DELETE FROM Games WHERE gameID = ?";
+        String sql = "DELETE FROM game WHERE gameID = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, gameID);
-
-            int rowsAffected = stmt.executeUpdate();
-            LOGGER.debug("Deleted game with ID {}: {} rows affected", gameID, rowsAffected);
-            return rowsAffected > 0;
+            int rowsDeleted = stmt.executeUpdate();
+            return rowsDeleted > 0;
         } catch (SQLException e) {
-            LOGGER.error("Error deleting game with ID {}: {}", gameID, e.getMessage());
-            throw new DataAccessException("Error encountered while deleting game from the database");
+            throw new DataAccessException("Error deleting game", e);
         }
     }
 
     @Override
     public void clear() throws DataAccessException {
-        String sql = "DELETE FROM Games";
+        String sql = "DELETE FROM game";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.executeUpdate();
-            nextId = 1;
-            LOGGER.debug("Cleared all games");
         } catch (SQLException e) {
-            LOGGER.error("Error clearing games: {}", e.getMessage());
-            throw new DataAccessException("Error encountered while clearing games from the database");
+            throw new DataAccessException("Error clearing games", e);
         }
     }
 
     @Override
     public Collection<GameData> getAllGames() throws DataAccessException {
         Collection<GameData> games = new ArrayList<>();
-        String sql = "SELECT * FROM Games";
+        String sql = "SELECT * FROM game";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                GameData game = new GameData(
+                games.add(new GameData(
                         rs.getInt("gameID"),
                         rs.getString("whiteUsername"),
                         rs.getString("blackUsername"),
                         rs.getString("gameName"),
                         rs.getString("additionalParameter")
-                );
-                games.add(game);
+                ));
             }
-            LOGGER.debug("Retrieved all games: {}", games.size());
         } catch (SQLException e) {
-            LOGGER.error("Error getting all games: {}", e.getMessage());
-            throw new DataAccessException("Error encountered while getting all games from the database");
+            throw new DataAccessException("Error getting all games", e);
         }
         return games;
     }

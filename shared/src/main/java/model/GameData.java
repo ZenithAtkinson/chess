@@ -1,11 +1,14 @@
 package model;
 
+import chess.ChessGame;
+
 public class GameData {
     private int gameID;
     private String whiteUsername;
     private String blackUsername;
     private String gameName;
-    private String additionalParameter;
+    private String additionalParameter; // Needs to be replaced with ChessGame object,
+    private ChessGame newGame;
 
     // Constructors, getters, and setters
 

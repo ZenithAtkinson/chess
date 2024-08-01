@@ -55,7 +55,7 @@ public class SQLUserDAO implements UserDAO {
             }
         } catch (SQLException e) {
             System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            user = memoryUserData.get(username);
+            //user = memoryUserData.get(username);
         }
 
         return user;
@@ -74,7 +74,7 @@ public class SQLUserDAO implements UserDAO {
             return true;
         } catch (SQLException e) {
             System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            memoryUserData.put(user.getUsername(), user);
+            //memoryUserData.put(user.getUsername(), user);
             return true;
         }
     }
@@ -92,7 +92,7 @@ public class SQLUserDAO implements UserDAO {
             return true;
         } catch (SQLException e) {
             System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            memoryUserData.put(user.getUsername(), user);
+            //memoryUserData.put(user.getUsername(), user);
             return true;
         }
     }
@@ -108,7 +108,7 @@ public class SQLUserDAO implements UserDAO {
             return true;
         } catch (SQLException e) {
             System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            memoryUserData.remove(username);
+            //memoryUserData.remove(username);
             return true;
         }
     }
@@ -121,7 +121,7 @@ public class SQLUserDAO implements UserDAO {
             stmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            memoryUserData.clear();
+            //memoryUserData.clear();
         }
     }
 
@@ -142,7 +142,7 @@ public class SQLUserDAO implements UserDAO {
             }
         } catch (SQLException e) {
             System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            users.addAll(memoryUserData.values());
+            //users.addAll(memoryUserData.values());
         }
         return users;
     }

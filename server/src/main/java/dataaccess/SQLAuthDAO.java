@@ -8,30 +8,30 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SQLAuthDAO implements AuthDAO {
-    private final Map<String, AuthData> memoryAuthData = new HashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(SQLAuthDAO.class);
 
     public SQLAuthDAO() {
         try {
             configureDatabase();
         } catch (DataAccessException e) {
-            System.err.println("Error configuring database: " + e.getMessage());
+            LOGGER.error("Error configuring database: {}", e.getMessage());
         }
     }
 
     private void configureDatabase() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS AuthTokens (" +
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS auth (" +
                     "authToken VARCHAR(255) PRIMARY KEY, " +
                     "username VARCHAR(255) NOT NULL)";
             stmt.executeUpdate(createTableSQL);
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Error configuring database: {}", e.getMessage());
             throw new DataAccessException("Error encountered while configuring the database");
         }
     }
@@ -39,7 +39,7 @@ public class SQLAuthDAO implements AuthDAO {
     @Override
     public AuthData getAuthData(String authToken) throws DataAccessException {
         AuthData authData = null;
-        String sql = "SELECT * FROM AuthTokens WHERE authToken = ?;";
+        String sql = "SELECT * FROM auth WHERE authToken = ?;";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -53,8 +53,8 @@ public class SQLAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            authData = memoryAuthData.get(authToken);
+            LOGGER.error("Error finding auth token {}: {}", authToken, e.getMessage());
+            throw new DataAccessException("Error encountered while finding auth token");
         }
 
         return authData;
@@ -62,53 +62,67 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public boolean addAuthData(AuthData authData) throws DataAccessException {
-        String sql = "INSERT INTO AuthTokens (authToken, username) VALUES (?, ?)";
+        if (getAuthData(authData.getAuthToken()) != null) {
+            LOGGER.warn("Auth token {} already exists, generating a new token.", authData.getAuthToken());
+            authData.setAuthToken(UUID.randomUUID().toString());
+        }
+
+        String sql = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, authData.getAuthToken());
             stmt.setString(2, authData.getUsername());
 
-            stmt.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new DataAccessException("Adding auth data failed, no rows affected.");
+            }
+
+            LOGGER.debug("Added auth data: {}", authData);
             return true;
         } catch (SQLException e) {
-            System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            memoryAuthData.put(authData.getAuthToken(), authData);
-            return true;
+            LOGGER.error("Error adding auth data: {}", e.getMessage());
+            throw new DataAccessException("Error encountered while inserting auth data into the database");
         }
     }
 
     @Override
     public boolean deleteAuthData(String authToken) throws DataAccessException {
-        String sql = "DELETE FROM AuthTokens WHERE authToken = ?";
+        String sql = "DELETE FROM auth WHERE authToken = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, authToken);
 
-            stmt.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new DataAccessException("Deleting auth data failed, no rows affected.");
+            }
+
+            LOGGER.debug("Deleted auth data with token {}: {} rows affected", authToken, affectedRows);
             return true;
         } catch (SQLException e) {
-            System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            memoryAuthData.remove(authToken);
-            return true;
+            LOGGER.error("Error deleting auth data with token {}: {}", authToken, e.getMessage());
+            throw new DataAccessException("Error encountered while deleting auth data from the database");
         }
     }
 
     @Override
     public void clear() throws DataAccessException {
-        String sql = "DELETE FROM AuthTokens";
+        String sql = "DELETE FROM auth";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.executeUpdate();
+            LOGGER.debug("Cleared all auth data");
         } catch (SQLException e) {
-            System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            memoryAuthData.clear();
+            LOGGER.error("Error clearing auth data: {}", e.getMessage());
+            throw new DataAccessException("Error encountered while clearing auth data from the database");
         }
     }
 
     @Override
     public Collection<AuthData> getAllAuthData() throws DataAccessException {
         Collection<AuthData> authDataList = new ArrayList<>();
-        String sql = "SELECT * FROM AuthTokens";
+        String sql = "SELECT * FROM auth";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -119,9 +133,10 @@ public class SQLAuthDAO implements AuthDAO {
                 );
                 authDataList.add(authData);
             }
+            LOGGER.debug("Retrieved all auth data: {}", authDataList.size());
         } catch (SQLException e) {
-            System.err.println("Falling back to in-memory storage: " + e.getMessage());
-            authDataList.addAll(memoryAuthData.values());
+            LOGGER.error("Error getting all auth data: {}", e.getMessage());
+            throw new DataAccessException("Error encountered while getting all auth data from the database");
         }
         return authDataList;
     }
@@ -131,6 +146,7 @@ public class SQLAuthDAO implements AuthDAO {
         String authToken = UUID.randomUUID().toString();
         AuthData authData = new AuthData(authToken, username);
         addAuthData(authData);
+        LOGGER.debug("Generated auth token for username {}: {}", username, authToken);
         return authToken;
     }
 }
