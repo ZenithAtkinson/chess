@@ -5,9 +5,11 @@ public class GameData {
     private String whiteUsername;
     private String blackUsername;
     private String gameName;
-    private Object additionalParameter; // Replace with actual type if necessary
+    private String additionalParameter;
 
-    public GameData(int gameID, String whiteUsername, String blackUsername, String gameName, Object additionalParameter) {
+    // Constructors, getters, and setters
+
+    public GameData(int gameID, String whiteUsername, String blackUsername, String gameName, String additionalParameter) {
         this.gameID = gameID;
         this.whiteUsername = whiteUsername;
         this.blackUsername = blackUsername;
@@ -15,7 +17,6 @@ public class GameData {
         this.additionalParameter = additionalParameter;
     }
 
-    // Getters and setters
     public int getGameID() {
         return gameID;
     }
@@ -48,11 +49,11 @@ public class GameData {
         this.gameName = gameName;
     }
 
-    public Object getAdditionalParameter() {
+    public String getAdditionalParameter() {
         return additionalParameter;
     }
 
-    public void setAdditionalParameter(Object additionalParameter) {
+    public void setAdditionalParameter(String additionalParameter) {
         this.additionalParameter = additionalParameter;
     }
 }

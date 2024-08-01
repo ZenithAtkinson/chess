@@ -10,7 +10,7 @@ public class MemoryGameDAO implements GameDAO {
     private int nextId = 1;
 
     @Override
-    //Get game by  ID
+    // Get game by ID
     public GameData getGame(int gameID) {
         return games.get(gameID);
     }
@@ -27,12 +27,22 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    // Update existing game?
+    // Update existing game
     public boolean updateGame(GameData game) {
         if (!games.containsKey(game.getGameID())) {
             return false;
         }
         games.put(game.getGameID(), game);
+        return true;
+    }
+
+    @Override
+    // Delete a game by ID
+    public boolean deleteGame(int gameID) {
+        if (!games.containsKey(gameID)) {
+            return false;
+        }
+        games.remove(gameID);
         return true;
     }
 
@@ -44,7 +54,7 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    // GET all games
+    // Get all games
     public Collection<GameData> getAllGames() {
         return games.values();
     }

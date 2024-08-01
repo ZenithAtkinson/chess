@@ -1,14 +1,9 @@
 package server;
 
+import dataaccess.*;
 import spark.Spark;
 import handlers.*;
 
-import dataaccess.AuthDAO;
-import dataaccess.GameDAO;
-import dataaccess.UserDAO;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
 import service.ClearService;
 import service.RegisterService;
 
@@ -22,14 +17,18 @@ public class Server {
         Spark.staticFiles.location("web");
 
         //Initialize DAO'ss
-        UserDAO userDAO = new MemoryUserDAO();
+        /*UserDAO userDAO = new MemoryUserDAO(); // Change this to use the SQL DAOS. ONLY DIFFERENCE is this will be the SQLDAO's
         GameDAO gameDAO = new MemoryGameDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();*/
+
+        UserDAO userDAO = new SQLUserDAO(); // Change this to use the SQL DAOS. ONLY DIFFERENCE is this will be the SQLDAO's
+        GameDAO gameDAO = new SQLGameDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
 
         //Initialize services
         RegisterService registerService = new RegisterService(userDAO, authDAO);
 
-        //Register handlers
+        //Register handlers (Should all be the same)
         Spark.post("/user", new RegisterHandler(registerService));
         Spark.post("/session", new LoginHandler(userDAO, authDAO));
         Spark.delete("/session", new LogoutHandler(authDAO));

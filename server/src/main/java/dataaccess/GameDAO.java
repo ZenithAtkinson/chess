@@ -9,6 +9,9 @@ public interface GameDAO {
     // adds the given GameData
     boolean addGame(GameData game) throws DataAccessException;
     boolean updateGame(GameData game) throws DataAccessException;
+
+    boolean deleteGame(int gameID) throws DataAccessException;
+
     // deletes the GameData for a given gameId
     //boolean deleteGame(int gameID) throws DataAccessException;
     void clear() throws DataAccessException;

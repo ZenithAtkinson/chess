@@ -2,39 +2,58 @@ package dataaccess;
 
 import model.UserData;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 
 public class MemoryUserDAO implements UserDAO {
-    private final Map<String, UserData> userDataMap = new HashMap<>();
+    private final Map<String, UserData> users = new HashMap<>();
 
     @Override
+    // Get user by username
     public UserData getUser(String username) {
-        //Get user data
-        return userDataMap.get(username);
+        return users.get(username);
     }
 
     @Override
     // Add a new user
     public boolean addUser(UserData user) {
-        if (userDataMap.containsKey(user.getUsername())) {
-            return false; // User already exists
+        if (users.containsKey(user.getUsername())) {
+            return false;
         }
-        userDataMap.put(user.getUsername(), user);
+        users.put(user.getUsername(), user);
         return true;
     }
 
-
     @Override
-    // Clear all users
-    public void clear() {
-        userDataMap.clear();
+    // Update existing user
+    public boolean updateUser(UserData user) {
+        if (!users.containsKey(user.getUsername())) {
+            return false;
+        }
+        users.put(user.getUsername(), user);
+        return true;
     }
 
     @Override
-    //Get all users
+    // Delete a user by username
+    public boolean deleteUser(String username) {
+        if (!users.containsKey(username)) {
+            return false;
+        }
+        users.remove(username);
+        return true;
+    }
+
+    @Override
+    // Clear all users from memory
+    public void clear() {
+        users.clear();
+    }
+
+    @Override
+    // Get all users
     public List<UserData> getAllUsers() {
-        return new ArrayList<>(userDataMap.values());
+        return new ArrayList<>(users.values());
     }
 }

@@ -19,7 +19,6 @@ public class JoinGameService {
         this.authDAO = authDAO;
     }
 
-    //Join an existing game
     public void joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
         LOGGER.debug("Starting joinGame with request: {}, authToken: {}", request, authToken);
 
@@ -29,33 +28,35 @@ public class JoinGameService {
             LOGGER.error("Unauthorized access with token: {}", authToken);
             throw new DataAccessException("Unauthorized"); // Throw exception if unauthorized
         }
-        // Get data
+
+        // Get game data
         GameData gameData = gameDAO.getGame(request.getGameID());
         if (gameData == null) {
             LOGGER.error("Game not found for ID: {}", request.getGameID());
             throw new DataAccessException("Game not found"); // Throw exception if game not found
         }
+
         String playerColor = request.getPlayerColor();
-        //Check color
         if (playerColor == null || (!playerColor.equals("WHITE") && !playerColor.equals("BLACK"))) {
             LOGGER.error("Invalid player color: {}", playerColor);
             throw new DataAccessException("Invalid player color"); // Throw exception if player color is invalid
         }
-        //Check if the player color is already taken
-        if (("WHITE".equals(playerColor) && gameData.getWhiteUsername() != null) ||
-                ("BLACK".equals(playerColor) && gameData.getBlackUsername() != null)) {
+
+        // Check if the player color is already taken
+        if (("WHITE".equals(playerColor) && gameData.getWhiteUsername() != null && !gameData.getWhiteUsername().isEmpty()) ||
+                ("BLACK".equals(playerColor) && gameData.getBlackUsername() != null && !gameData.getBlackUsername().isEmpty())) {
             LOGGER.error("Player color already taken: {}", playerColor);
             throw new DataAccessException("Player color already taken"); // Throw exception if player color is already taken
         }
 
-        //Set the username for color
+        // Set the username for color
         if ("WHITE".equals(playerColor)) {
             gameData.setWhiteUsername(authData.getUsername());
         } else if ("BLACK".equals(playerColor)) {
             gameData.setBlackUsername(authData.getUsername());
         }
 
-        //Update the game data in
+        // Update the game data in the database
         gameDAO.updateGame(gameData);
         LOGGER.debug("Successfully joined game with ID: {}", request.getGameID());
     }
