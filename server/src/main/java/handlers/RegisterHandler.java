@@ -9,6 +9,15 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+
+/*
+void storeUserPassword(String username, String password) {
+   String hashedPassword = BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
+
+   // write the hashed password in database along with the user's other information
+   writeHashedPasswordToDatabase(username, hashedPassword);
+}
+ */
 public class RegisterHandler implements Route {
     private final RegisterService registerService;
     private final Gson gson = new Gson();

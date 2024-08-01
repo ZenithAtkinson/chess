@@ -25,7 +25,7 @@ public class SQLUserDAO implements UserDAO {
     private void configureDatabase() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS Users (" +
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS users (" + // Check for Users vs users
                     "username VARCHAR(255) PRIMARY KEY, " +
                     "password VARCHAR(255) NOT NULL, " +
                     "email VARCHAR(255) NOT NULL)";
@@ -39,7 +39,7 @@ public class SQLUserDAO implements UserDAO {
     @Override
     public UserData getUser(String username) throws DataAccessException {
         UserData user = null;
-        String sql = "SELECT * FROM Users WHERE username = ?;";
+        String sql = "SELECT * FROM users WHERE username = ?;";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -63,7 +63,7 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public boolean addUser(UserData user) throws DataAccessException {
-        String sql = "INSERT INTO Users (username, password, email) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getUsername());
@@ -81,7 +81,7 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public boolean updateUser(UserData user) throws DataAccessException {
-        String sql = "UPDATE Users SET password = ?, email = ? WHERE username = ?";
+        String sql = "UPDATE users SET password = ?, email = ? WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getPassword());
@@ -99,7 +99,7 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public boolean deleteUser(String username) throws DataAccessException {
-        String sql = "DELETE FROM Users WHERE username = ?";
+        String sql = "DELETE FROM users WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, username);
@@ -115,7 +115,7 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public void clear() throws DataAccessException {
-        String sql = "DELETE FROM Users";
+        String sql = "DELETE FROM users";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.executeUpdate();
@@ -128,7 +128,7 @@ public class SQLUserDAO implements UserDAO {
     @Override
     public Collection<UserData> getAllUsers() throws DataAccessException {
         Collection<UserData> users = new ArrayList<>();
-        String sql = "SELECT * FROM Users";
+        String sql = "SELECT * FROM users";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
