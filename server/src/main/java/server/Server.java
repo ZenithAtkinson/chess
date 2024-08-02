@@ -38,10 +38,11 @@ public class Server {
         Spark.delete("/db", new ClearHandler(new ClearService(userDAO, gameDAO, authDAO)));
 
         // Exception handling
-        Spark.exception(Exception.class, (exception, request, response) -> {
+            // Try without handling
+        /*Spark.exception(Exception.class, (exception, request, response) -> {
             response.status(500);
             response.body("{\"message\":\"Internal Server Error: " + exception.getMessage() + "\"}");
-        });
+        });*/
 
         // Await initialization
         Spark.awaitInitialization();
@@ -52,5 +53,6 @@ public class Server {
 
     public void stop() {
         Spark.stop();
+        Spark.awaitStop();
     }
 }
