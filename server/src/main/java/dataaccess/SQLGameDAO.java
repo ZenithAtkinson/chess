@@ -30,13 +30,13 @@ public class SQLGameDAO implements GameDAO {
     public SQLGameDAO() {
         gson = new GsonBuilder().create();
         try {
-            configureDatabase();
+            configureGAMEDatabase();
         } catch (DataAccessException e) {
             System.out.println("Game ddatabase unable to be configured: " + e.getMessage());
         }
     }
 
-    private void configureDatabase() throws DataAccessException {
+    private void configureGAMEDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
             var statements = new String[]{CREATE_TABLE_STATEMENT};

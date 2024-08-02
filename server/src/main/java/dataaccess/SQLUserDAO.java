@@ -22,23 +22,23 @@ public class SQLUserDAO implements UserDAO {
 
     public SQLUserDAO() {
         try {
-            configureDatabase();
+            configureUSERDatabase();
         } catch (DataAccessException e) {
             System.out.println("User database unable to be configured: " + e.getMessage());
         }
     }
 
-    private void configureDatabase() throws DataAccessException {
+    private void configureUSERDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
+        try (var connections = DatabaseManager.getConnection()) {
             var statements = new String[]{CREATE_TABLE_STATEMENT};
             for (var statement : statements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
+                try (var preparedStatement = connections.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
             }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        } catch (SQLException exec) {
+            throw new DataAccessException(String.format("Unable to configure the user database: %s", exec.getMessage()));
         }
     }
 
