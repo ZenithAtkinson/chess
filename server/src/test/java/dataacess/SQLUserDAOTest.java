@@ -1,12 +1,10 @@
 package dataacess;
 
-import dataaccess.DataAccessException;
-import dataaccess.SQLUserDAO;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collection;
+import dataaccess.DataAccessException;
+import dataaccess.SQLUserDAO;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +27,7 @@ class SQLUserDAOTest {
     void testAddUserNegative() throws DataAccessException {
         UserData user = new UserData("user1", "password1", "email1");
         userDAO.addUser(user);
-        assertThrows(DataAccessException.class, () -> userDAO.addUser(user));
+        assertThrows(DataAccessException.class, () -> userDAO.addUser(new UserData("user1", "password2", "email2")));
     }
 
     @Test
@@ -42,22 +40,24 @@ class SQLUserDAOTest {
 
     @Test
     void testGetUserNegative() throws DataAccessException {
-        assertNull(userDAO.getUser("invalid_user"));
+        assertNull(userDAO.getUser("nonexistent_user"));
     }
 
     @Test
     void testUpdateUserPositive() throws DataAccessException {
         UserData user = new UserData("user1", "password1", "email1");
         userDAO.addUser(user);
-        //user.setEmail("new_email1");
+        user.setPassword("new_password");
+        user.setEmail("new_email");
         assertTrue(userDAO.updateUser(user));
         UserData updatedUser = userDAO.getUser("user1");
-        assertEquals("new_email1", updatedUser.getEmail());
+        assertEquals("new_password", updatedUser.getPassword());
+        assertEquals("new_email", updatedUser.getEmail());
     }
 
     @Test
     void testUpdateUserNegative() throws DataAccessException {
-        UserData user = new UserData("invalid_user", "password1", "email1");
+        UserData user = new UserData("nonexistent_user", "password", "email");
         assertFalse(userDAO.updateUser(user));
     }
 
@@ -71,7 +71,7 @@ class SQLUserDAOTest {
 
     @Test
     void testDeleteUserNegative() throws DataAccessException {
-        assertFalse(userDAO.deleteUser("invalid_user"));
+        assertFalse(userDAO.deleteUser("nonexistent_user"));
     }
 
     @Test
@@ -80,8 +80,7 @@ class SQLUserDAOTest {
         UserData user2 = new UserData("user2", "password2", "email2");
         userDAO.addUser(user1);
         userDAO.addUser(user2);
-        Collection<UserData> users = userDAO.getAllUsers();
-        assertEquals(2, users.size());
+        assertEquals(2, userDAO.getAllUsers().size());
     }
 
     @Test
