@@ -1,16 +1,13 @@
 package model;
 
-import chess.ChessGame;
+import java.util.Objects;
 
 public class GameData {
     private int gameID;
     private String whiteUsername;
     private String blackUsername;
     private String gameName;
-    private String additionalParameter; // Needs to be replaced with ChessGame object,
-    private ChessGame newGame;
-
-    // Constructors, getters, and setters
+    private String additionalParameter;
 
     public GameData(int gameID, String whiteUsername, String blackUsername, String gameName, String additionalParameter) {
         this.gameID = gameID;
@@ -58,5 +55,22 @@ public class GameData {
 
     public void setAdditionalParameter(String additionalParameter) {
         this.additionalParameter = additionalParameter;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GameData gameData = (GameData) o;
+        return gameID == gameData.gameID &&
+                Objects.equals(whiteUsername, gameData.whiteUsername) &&
+                Objects.equals(blackUsername, gameData.blackUsername) &&
+                Objects.equals(gameName, gameData.gameName) &&
+                Objects.equals(additionalParameter, gameData.additionalParameter);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(gameID, whiteUsername, blackUsername, gameName, additionalParameter);
     }
 }

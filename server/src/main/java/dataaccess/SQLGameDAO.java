@@ -8,7 +8,7 @@ import java.util.Collection;
 public class SQLGameDAO implements GameDAO {
     private static final String CREATE_TABLE_STATEMENT = getCreateStatement();
 
-    private static String getCreateStatement() { // Every time a change is made, REMEMBER: drop the table again
+    private static String getCreateStatement() {
         return """
             CREATE TABLE IF NOT EXISTS `game` (
                 `gameID` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -44,13 +44,27 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public boolean addGame(GameData gameData) throws DataAccessException {
-        String sql = "INSERT INTO game (whiteUsername, blackUsername, gameName, additionalParameter) VALUES (?, ?, ?, ?)";
+        // Check if the game with the same name already exists
+        String checkSql = "SELECT * FROM game WHERE gameName = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+            checkStmt.setString(1, gameData.getGameName());
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next()) {
+                    throw new DataAccessException("Game with the same name already exists");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error checking existing game", e);
+        }
+
+        String sql = "INSERT INTO game (gameName, whiteUsername, blackUsername, additionalParameter) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, gameData.getWhiteUsername() != null ? gameData.getWhiteUsername() : null);
-            stmt.setString(2, gameData.getBlackUsername() != null ? gameData.getBlackUsername() : null);
-            stmt.setString(3, gameData.getGameName());
-            stmt.setString(4, gameData.getAdditionalParameter() != null ? gameData.getAdditionalParameter() : "none");
+            stmt.setString(1, gameData.getGameName());
+            stmt.setString(2, gameData.getWhiteUsername());
+            stmt.setString(3, gameData.getBlackUsername());
+            stmt.setString(4, gameData.getAdditionalParameter());
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
                 throw new DataAccessException("Adding game failed, no rows affected.");
@@ -67,6 +81,7 @@ public class SQLGameDAO implements GameDAO {
             throw new DataAccessException("Error adding game", e);
         }
     }
+
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
