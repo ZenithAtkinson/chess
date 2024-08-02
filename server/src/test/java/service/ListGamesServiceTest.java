@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import chess.ChessGame;
 
 public class ListGamesServiceTest {
     private ListGamesService listGamesService;
@@ -31,12 +32,13 @@ public class ListGamesServiceTest {
 
     @Test
     public void listGamesPass() throws Exception {
-        //Add auth token
+        // Add auth token
         AuthData authData = new AuthData("authToken", "testUser");
         authDAO.addAuthData(authData);
 
-        //Add game
-        GameData gameData = new GameData(1, "testUser", null, "testGame", null);
+        // Add game with ChessGame object
+        ChessGame chessGame = new ChessGame(); // Create a ChessGame object
+        GameData gameData = new GameData(1, "testUser", null, "testGame", chessGame, "none");
         gameDAO.addGame(gameData);
 
         ListGamesResult result = listGamesService.listGames("authToken");

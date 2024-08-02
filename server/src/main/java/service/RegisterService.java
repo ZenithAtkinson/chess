@@ -22,24 +22,19 @@ public class RegisterService {
         if (request.getUsername() == null || request.getPassword() == null || request.getEmail() == null) {
             throw new DataAccessException("Error: Missing required fields");
         }
-        // Check if user exists
+
         UserData existingUser = userDAO.getUser(request.getUsername());
         if (existingUser != null) {
             throw new DataAccessException("Error: User already exists");
         }
 
-        // Hash the password
         String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
-
-        // Create the new user with the hashed password
         UserData newUser = new UserData(request.getUsername(), hashedPassword, request.getEmail());
+
         if (userDAO.addUser(newUser)) {
-            // Generate an auth token for the new user
             String authToken = authDAO.generateAuthToken(newUser.getUsername());
-            // Create auth data and add it to the data store
             AuthData authData = new AuthData(authToken, newUser.getUsername());
             authDAO.addAuthData(authData);
-            // Return the registration result
             return new RegisterResult(newUser.getUsername(), authToken);
         } else {
             throw new DataAccessException("Error: Failed to register user");

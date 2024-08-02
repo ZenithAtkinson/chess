@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import chess.ChessGame;
 
 public class JoinGameServiceTest {
     private JoinGameService joinGameService;
@@ -31,18 +32,19 @@ public class JoinGameServiceTest {
 
     @Test
     public void joinGamePass() throws Exception {
-        //Add game to join
-        GameData gameData = new GameData(1, null, null, "testGame", null);
+        // Add game to join
+        ChessGame chessGame = new ChessGame(); // Create a ChessGame object
+        GameData gameData = new GameData(1, null, null, "testGame", chessGame, "none");
         gameDAO.addGame(gameData);
 
-        //Add auth token
+        // Add auth token
         AuthData authData = new AuthData("authToken", "testUser");
         authDAO.addAuthData(authData);
 
         JoinGameRequest request = new JoinGameRequest(1, "WHITE");
         joinGameService.joinGame(request, "authToken");
 
-        //Verify updated
+        // Verify updated
         GameData updatedGame = gameDAO.getGame(1);
         Assertions.assertEquals("testUser", updatedGame.getWhiteUsername());
     }

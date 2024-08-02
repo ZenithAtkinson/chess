@@ -1,5 +1,7 @@
 package model;
 
+import chess.ChessGame;
+
 import java.util.Objects;
 
 public class GameData {
@@ -7,16 +9,19 @@ public class GameData {
     private String whiteUsername;
     private String blackUsername;
     private String gameName;
+    private ChessGame chessGame;
     private String additionalParameter;
 
-    public GameData(int gameID, String whiteUsername, String blackUsername, String gameName, String additionalParameter) {
+    public GameData(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame chessGame, String additionalParameter) {
         this.gameID = gameID;
         this.whiteUsername = whiteUsername;
         this.blackUsername = blackUsername;
         this.gameName = gameName;
+        this.chessGame = chessGame;
         this.additionalParameter = additionalParameter;
     }
 
+    // Getters and Setters
     public int getGameID() {
         return gameID;
     }
@@ -49,6 +54,14 @@ public class GameData {
         this.gameName = gameName;
     }
 
+    public ChessGame getChessGame() {
+        return chessGame;
+    }
+
+    public void setChessGame(ChessGame chessGame) {
+        this.chessGame = chessGame;
+    }
+
     public String getAdditionalParameter() {
         return additionalParameter;
     }
@@ -66,11 +79,12 @@ public class GameData {
                 Objects.equals(whiteUsername, gameData.whiteUsername) &&
                 Objects.equals(blackUsername, gameData.blackUsername) &&
                 Objects.equals(gameName, gameData.gameName) &&
+                Objects.equals(chessGame, gameData.chessGame) &&
                 Objects.equals(additionalParameter, gameData.additionalParameter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(gameID, whiteUsername, blackUsername, gameName, additionalParameter);
+        return Objects.hash(gameID, whiteUsername, blackUsername, gameName, chessGame, additionalParameter);
     }
 }

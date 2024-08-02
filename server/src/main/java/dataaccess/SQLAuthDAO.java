@@ -62,27 +62,20 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public boolean addAuthData(AuthData authData) throws DataAccessException {
-        if (getAuthData(authData.getAuthToken()) != null) {
-            LOGGER.warn("Auth token {} already exists, generating a new token.", authData.getAuthToken());
-            authData.setAuthToken(UUID.randomUUID().toString());
-        }
-
         String sql = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, authData.getAuthToken());
             stmt.setString(2, authData.getUsername());
-
             int affectedRows = stmt.executeUpdate();
-            if (affectedRows == 0) {
-                throw new DataAccessException("Adding auth data failed, no rows affected.");
-            }
-
-            LOGGER.debug("Added auth data: {}", authData);
-            return true;
+            return affectedRows > 0;
         } catch (SQLException e) {
-            LOGGER.error("Error adding auth data: {}", e.getMessage());
-            throw new DataAccessException("Error encountered while inserting auth data into the database");
+            if (e.getMessage().contains("Duplicate entry")) {
+                authData.setAuthToken(UUID.randomUUID().toString());
+                return addAuthData(authData);
+            } else {
+                throw new DataAccessException("Error adding auth data", e);
+            }
         }
     }
 

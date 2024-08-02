@@ -1,12 +1,17 @@
 package dataaccess;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import model.GameData;
+import chess.ChessGame;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class SQLGameDAO implements GameDAO {
     private static final String CREATE_TABLE_STATEMENT = getCreateStatement();
+    private final Gson gson;
 
     private static String getCreateStatement() {
         return """
@@ -15,12 +20,14 @@ public class SQLGameDAO implements GameDAO {
                 `gameName` VARCHAR(256) NOT NULL,
                 `whiteUsername` VARCHAR(64),
                 `blackUsername` VARCHAR(64),
+                `gameState` TEXT NOT NULL,
                 `additionalParameter` VARCHAR(255) DEFAULT 'none' 
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """;
     }
 
     public SQLGameDAO() {
+        gson = new GsonBuilder().create();
         try {
             configureDatabase();
         } catch (DataAccessException e) {
@@ -58,13 +65,15 @@ public class SQLGameDAO implements GameDAO {
             throw new DataAccessException("Error checking existing game", e);
         }
 
-        String sql = "INSERT INTO game (gameName, whiteUsername, blackUsername, additionalParameter) VALUES (?, ?, ?, ?)";
+        String gameState = gson.toJson(gameData.getChessGame());
+        String sql = "INSERT INTO game (gameName, whiteUsername, blackUsername, gameState, additionalParameter) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, gameData.getGameName());
             stmt.setString(2, gameData.getWhiteUsername());
             stmt.setString(3, gameData.getBlackUsername());
-            stmt.setString(4, gameData.getAdditionalParameter());
+            stmt.setString(4, gameState);
+            stmt.setString(5, gameData.getAdditionalParameter());
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
                 throw new DataAccessException("Adding game failed, no rows affected.");
@@ -82,7 +91,6 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
-
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         String sql = "SELECT * FROM game WHERE gameID = ?";
@@ -91,11 +99,13 @@ public class SQLGameDAO implements GameDAO {
             stmt.setInt(1, gameID);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    ChessGame chessGame = gson.fromJson(rs.getString("gameState"), ChessGame.class); // Serialization (gson from json)
                     return new GameData(
                             rs.getInt("gameID"),
                             rs.getString("whiteUsername"),
                             rs.getString("blackUsername"),
                             rs.getString("gameName"),
+                            chessGame,
                             rs.getString("additionalParameter")
                     );
                 }
@@ -108,14 +118,16 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public boolean updateGame(GameData gameData) throws DataAccessException {
-        String sql = "UPDATE game SET whiteUsername = ?, blackUsername = ?, gameName = ?, additionalParameter = ? WHERE gameID = ?";
+        String gameState = gson.toJson(gameData.getChessGame()); // Serializatoin gson to json
+        String sql = "UPDATE game SET whiteUsername = ?, blackUsername = ?, gameName = ?, gameState = ?, additionalParameter = ? WHERE gameID = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, gameData.getWhiteUsername());
             stmt.setString(2, gameData.getBlackUsername());
             stmt.setString(3, gameData.getGameName());
-            stmt.setString(4, gameData.getAdditionalParameter());
-            stmt.setInt(5, gameData.getGameID());
+            stmt.setString(4, gameState); // Actual game object being serialized
+            stmt.setString(5, gameData.getAdditionalParameter());
+            stmt.setInt(6, gameData.getGameID());
             int rowsUpdated = stmt.executeUpdate();
             return rowsUpdated > 0;
         } catch (SQLException e) {
@@ -155,11 +167,13 @@ public class SQLGameDAO implements GameDAO {
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
+                ChessGame chessGame = gson.fromJson(rs.getString("gameState"), ChessGame.class);
                 games.add(new GameData(
                         rs.getInt("gameID"),
                         rs.getString("whiteUsername"),
                         rs.getString("blackUsername"),
                         rs.getString("gameName"),
+                        chessGame,
                         rs.getString("additionalParameter")
                 ));
             }

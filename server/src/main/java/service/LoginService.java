@@ -23,23 +23,31 @@ public class LoginService {
             throw new DataAccessException("Error: Missing required fields");
         }
 
-        // Retrieve user data
-        UserData user = userDAO.getUser(request.username());
-        if (user == null || !verifyPassword(request.password(), user.getPassword())) {
+        if (!verifyUser(request.username(), request.password())) {
             throw new DataAccessException("Error: Invalid username or password");
         }
 
         // Generate an auth token for the user
-        String authToken = authDAO.generateAuthToken(user.getUsername());
+        String authToken = authDAO.generateAuthToken(request.username());
         // Create auth data and add it to the data store
-        AuthData authData = new AuthData(authToken, user.getUsername());
+        AuthData authData = new AuthData(authToken, request.username());
         authDAO.addAuthData(authData);
 
         // Return the login result
-        return new LoginResult(user.getUsername(), authToken);
+        return new LoginResult(request.username(), authToken);
     }
 
-    private boolean verifyPassword(String providedPassword, String storedHashedPassword) {
-        return BCrypt.checkpw(providedPassword, storedHashedPassword);
+    private boolean verifyUser(String username, String providedClearTextPassword) throws DataAccessException {
+        //Retrieve user data
+        UserData user = userDAO.getUser(username);
+        if (user == null) {
+            return false;
+        }
+
+        //Read the previously hashed password from the database
+        String hashedPassword = user.getPassword();
+
+        //Compare the provided password with the stored hashed password
+        return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
     }
 }
