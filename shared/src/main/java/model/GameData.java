@@ -72,8 +72,12 @@ public class GameData {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         GameData gameData = (GameData) o;
         return gameID == gameData.gameID &&
                 Objects.equals(whiteUsername, gameData.whiteUsername) &&

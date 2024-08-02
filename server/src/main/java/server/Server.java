@@ -17,10 +17,6 @@ public class Server {
         Spark.staticFiles.location("web");
 
         //Initialize DAO'ss
-        /*UserDAO userDAO = new MemoryUserDAO(); // Change this to use the SQL DAOS. ONLY DIFFERENCE is this will be the SQLDAO's
-        GameDAO gameDAO = new MemoryGameDAO();
-        AuthDAO authDAO = new MemoryAuthDAO();*/
-
         UserDAO userDAO = new SQLUserDAO(); // Change this to use the SQL DAOS. ONLY DIFFERENCE is this will be the SQLDAO's
         GameDAO gameDAO = new SQLGameDAO();
         AuthDAO authDAO = new SQLAuthDAO();

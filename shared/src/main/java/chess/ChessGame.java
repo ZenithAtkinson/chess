@@ -290,9 +290,13 @@ public class ChessGame {
     //private ChessBoard cloneBoard(ChessBoard originalBoard) { //deep copy of ChessBoard
     //moved to just the board class
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o) { // Added for the ChessGame object checking in SQL
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ChessGame chessGame = (ChessGame) o;
         return Objects.equals(board, chessGame.board) &&
                 currentTurn == chessGame.currentTurn &&

@@ -12,20 +12,9 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    // Hash a password and write to the database
-    public void writeHashedPasswordToDatabase(String username, String password) throws DataAccessException {
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-        UserData user = userDAO.getUser(username);
-        if (user != null) {
-            user.setPassword(hashedPassword);
-            userDAO.updateUser(user);
-        } else {
-            user = new UserData(username, hashedPassword, user.getEmail());
-            userDAO.addUser(user);
-        }
-    }
+  //Unused write hashed password
 
-    // Read the hashed password from the database
+    //Read the hashed password from the database
     public String readHashedPasswordFromDatabase(String username) throws DataAccessException {
         UserData user = userDAO.getUser(username);
         if (user != null) {

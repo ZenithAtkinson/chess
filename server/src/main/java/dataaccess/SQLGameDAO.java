@@ -13,6 +13,7 @@ public class SQLGameDAO implements GameDAO {
     private static final String CREATE_TABLE_STATEMENT = getCreateStatement();
     private final Gson gson;
 
+    // Double check PetShop code if this is right? What does the "ENGINE" do?
     private static String getCreateStatement() {
         return """
             CREATE TABLE IF NOT EXISTS `game` (
@@ -31,7 +32,7 @@ public class SQLGameDAO implements GameDAO {
         try {
             configureDatabase();
         } catch (DataAccessException e) {
-            System.out.println("Database unable to be configured: " + e.getMessage());
+            System.out.println("Game database unable to be configured: " + e.getMessage());
         }
     }
 
@@ -125,7 +126,7 @@ public class SQLGameDAO implements GameDAO {
             stmt.setString(1, gameData.getWhiteUsername());
             stmt.setString(2, gameData.getBlackUsername());
             stmt.setString(3, gameData.getGameName());
-            stmt.setString(4, gameState); // Actual game object being serialized
+            stmt.setString(4, gameState); //Actual game object being serialized
             stmt.setString(5, gameData.getAdditionalParameter());
             stmt.setInt(6, gameData.getGameID());
             int rowsUpdated = stmt.executeUpdate();

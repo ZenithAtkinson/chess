@@ -12,12 +12,7 @@ import spark.Response;
 import spark.Route;
 
 /*
-boolean verifyUser(String username, String providedClearTextPassword) {
-   // read the previously hashed password from the database
-   var hashedPassword = readHashedPasswordFromDatabase(username);
-
-   return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
-}
+boolean verifyUser(String username, String providedClearTextPassword) {}
  */
 
 public class LoginHandler implements Route {

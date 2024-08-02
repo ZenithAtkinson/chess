@@ -9,6 +9,7 @@ public class SQLUserDAO implements UserDAO {
 
     private static final String CREATE_TABLE_STATEMENT = getCreateStatement();
 
+    //Modify to be like SQLGameDAO
     private static String getCreateStatement() {
         return """
             CREATE TABLE IF NOT EXISTS `users` (
@@ -23,7 +24,7 @@ public class SQLUserDAO implements UserDAO {
         try {
             configureDatabase();
         } catch (DataAccessException e) {
-            System.out.println("Database unable to be configured: " + e.getMessage());
+            System.out.println("User database unable to be configured: " + e.getMessage());
         }
     }
 
