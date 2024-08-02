@@ -32,7 +32,7 @@ public class SQLGameDAO implements GameDAO {
         try {
             configureDatabase();
         } catch (DataAccessException e) {
-            System.out.println("Game database unable to be configured: " + e.getMessage());
+            System.out.println("Game ddatabase unable to be configured: " + e.getMessage());
         }
     }
 

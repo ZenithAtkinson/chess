@@ -33,12 +33,14 @@ public class Server {
         Spark.put("/game", new JoinGameHandler(gameDAO, authDAO));
         Spark.delete("/db", new ClearHandler(new ClearService(userDAO, gameDAO, authDAO)));
 
-        // Exception handling
-            // Try without handling
-        /*Spark.exception(Exception.class, (exception, request, response) -> {
-            response.status(500);
-            response.body("{\"message\":\"Internal Server Error: " + exception.getMessage() + "\"}");
-        });*/
+        /** * // Exception handling
+        *     // Try without handling
+        * Spark.exception(Exception.class, (exception, request, response) -> {
+        *     response.status(500);
+        *     response.body("{\"message\":\"Internal Server Error: " + exception.getMessage() + "\"}");
+        * });
+         */
+
 
         // Await initialization
         Spark.awaitInitialization();
