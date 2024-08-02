@@ -1,4 +1,4 @@
-package dataacess;
+package dataaccess;
 
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
@@ -25,7 +25,7 @@ class PasswordHashingTest {
         // Positive case: correct password
         assertTrue(BCrypt.checkpw(plainPassword, hashedPassword));
 
-        // Negative case: incorrect password
+        //Negu case: incorrect password
         assertFalse(BCrypt.checkpw("wrongPassword", hashedPassword));
     }
 }

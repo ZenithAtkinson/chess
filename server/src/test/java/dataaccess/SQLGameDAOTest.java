@@ -1,7 +1,5 @@
-package dataacess;
+package dataaccess;
 
-import dataaccess.DataAccessException;
-import dataaccess.SQLGameDAO;
 import model.GameData;
 import chess.ChessGame;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +34,7 @@ class SQLGameDAOTest {
         assertThrows(DataAccessException.class, () -> gameDAO.addGame(game2));
     }
 
+    //pleae stop failing
     @Test
     void testGetGamePositive() throws DataAccessException {
         ChessGame chessGame = new ChessGame();

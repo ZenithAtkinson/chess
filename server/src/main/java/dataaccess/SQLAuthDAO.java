@@ -23,6 +23,7 @@ public class SQLAuthDAO implements AuthDAO {
         }
     }
 
+    //WHY
     private void configureDatabase() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
