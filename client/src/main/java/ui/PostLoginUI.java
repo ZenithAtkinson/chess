@@ -1,15 +1,14 @@
 package ui;
-// Play Game and Observe should both call "BoardPrinter"
+
 import java.util.Scanner;
 import ServerUtils.ServerFacade;
+import model.GameData;
 import chess.ChessGame;
-import
-
-
+import dataaccess.DataAccessException;
 
 public class PostLoginUI {
     private static Scanner scanner = new Scanner(System.in);
-    private static ServerFacade serverFacade = new ServerFacade();
+    private static ServerFacade serverFacade = new ServerFacade("http://localhost:8080"); // Example URL
 
     public static void displayMenu() {
         System.out.print("[LOGGED_IN] >>> ");
@@ -70,44 +69,43 @@ public class PostLoginUI {
 
     public static void logout() {
         try {
-            String authToken = DataCache.getInstance().getAuthToken();
-            serverFacade.logout(authToken);
+            serverFacade.logout();
             System.out.println("Logged out successfully.");
             PreLoginUI.displayWelcomeMessage();
             PreLoginUI.displayMenu();
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             System.out.println("Error logging out: " + e.getMessage());
         }
     }
 
     public static void createGame(String gameName) {
         try {
-            Game game = new Game(gameName);
-            serverFacade.createGame(game);
+            GameData gameData = new GameData(0, "", "", gameName, new ChessGame(), "");
+            serverFacade.createGame(gameData);
             System.out.println("Game created successfully!");
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             System.out.println("Error creating game: " + e.getMessage());
         }
     }
 
     public static void listGames() {
         try {
-            List<Game> games = serverFacade.listGames();
+            GameData[] games = serverFacade.listGames();
             int index = 1;
-            for (Game game : games) {
-                System.out.println(index + ". " + game.getName() + " - Players: " + game.getPlayers());
+            for (GameData game : games) {
+                System.out.println(index + ". " + game.getGameName() + " - White: " + game.getWhiteUsername() + ", Black: " + game.getBlackUsername());
                 index++;
             }
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             System.out.println("Error listing games: " + e.getMessage());
         }
     }
 
     public static void joinGame(String gameId, String color) {
         try {
-            serverFacade.joinGame(gameId, color);
+            ChessGame chessGame = serverFacade.joinGame(gameId, color);
             System.out.println("Joined game successfully!");
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             System.out.println("Error joining game: " + e.getMessage());
         }
     }
