@@ -60,7 +60,7 @@ public class ServerFacade {
 
     public GameData[] listGames() throws ResponseException {
         var path = "/game";
-        //System.out.println("Sending list game request: " + gson.toJson(request));
+        System.out.println("Sending list games request with auth token: " + (authData != null ? authData.getAuthToken() : "No Auth Token"));
         GameData[] out = this.makeRequest("GET", path, null, GameData[].class);
         System.out.println("Received list games response: " + gson.toJson(out));
         return out;
@@ -115,13 +115,25 @@ public class ServerFacade {
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
-            throw new ResponseException(status, "failure, HTTP connection not successful: " + status);
+            String errorResponseBody = readErrorResponseBody(http);
+            throw new ResponseException(status, "failure, HTTP connection not successful: " + status + ", " + errorResponseBody);
         }
     }
 
     private static String readResponseBody(HttpURLConnection http) throws IOException {
         StringBuilder responseBody = new StringBuilder();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(http.getInputStream()))) {
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                responseBody.append(inputLine);
+            }
+        }
+        return responseBody.toString();
+    }
+
+    private static String readErrorResponseBody(HttpURLConnection http) throws IOException {
+        StringBuilder responseBody = new StringBuilder();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(http.getErrorStream()))) {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 responseBody.append(inputLine);

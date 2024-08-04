@@ -9,6 +9,8 @@ import model.GameData;
 import model.UserData;
 import request.CreateGameRequest;
 
+import java.util.Arrays;
+
 public class ServerFacadeTests {
 
     private static Server server;
@@ -81,8 +83,13 @@ public class ServerFacadeTests {
         AuthData authData = facade.login(loginRequest);
         facade.setAuthData(authData);
 
-        CreateGameRequest gameData = new CreateGameRequest("game2");
+        CreateGameRequest gameData = new CreateGameRequest("game1");
         facade.createGame(gameData);
+
+        gameData = new CreateGameRequest("game2");
+        facade.createGame(gameData);
+
+        System.out.println("Created GameData: " + gameData);
 
         GameData[] response = facade.listGames();
         System.out.println("List Games Test - GameData Array: " + response);

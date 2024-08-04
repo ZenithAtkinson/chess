@@ -23,7 +23,6 @@ public class SQLAuthDAO implements AuthDAO {
         }
     }
 
-    //WHY
     private void configureDatabase() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
@@ -39,6 +38,11 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public AuthData getAuthData(String authToken) throws DataAccessException {
+        // Remove the "Bearer " prefix if it exists
+        if (authToken.startsWith("Bearer ")) {
+            authToken = authToken.substring(7);
+        }
+
         AuthData authData = null;
         String sql = "SELECT * FROM auth WHERE authToken = ?;";
 
@@ -51,6 +55,9 @@ public class SQLAuthDAO implements AuthDAO {
                             rs.getString("authToken"),
                             rs.getString("username")
                     );
+                    LOGGER.info("Retrieved Auth Data from DB: {}", authData);
+                } else {
+                    LOGGER.warn("No Auth Data found for token: {}", authToken);
                 }
             }
         } catch (SQLException e) {
@@ -61,6 +68,7 @@ public class SQLAuthDAO implements AuthDAO {
         return authData;
     }
 
+
     @Override
     public boolean addAuthData(AuthData authData) throws DataAccessException {
         String sql = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
@@ -69,6 +77,9 @@ public class SQLAuthDAO implements AuthDAO {
             stmt.setString(1, authData.getAuthToken());
             stmt.setString(2, authData.getUsername());
             int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                LOGGER.info("Successfully added Auth Data: {}", authData);
+            }
             return affectedRows > 0;
         } catch (SQLException e) {
             if (e.getMessage().contains("Duplicate entry")) {
