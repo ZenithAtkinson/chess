@@ -1,65 +1,82 @@
 package ui;
 
 import java.util.Scanner;
+
 import ServerUtils.ServerFacade;
 import model.UserData;
 import model.AuthData;
 
 public class PreLoginUI {
-    private static Scanner scanner = new Scanner(System.in);
-    private static ServerFacade serverFacade = new ServerFacade();
+    private final ServerFacade serverFacade;
 
-    public static void displayWelcomeMessage() {
-        System.out.println("🏰 Welcome to 240 chess. Type Help to get started. 🏰");
+    public PreLoginUI(ServerFacade serverFacade) {
+        this.serverFacade = serverFacade;
     }
 
-    public static void displayMenu() {
-        System.out.print("[LOGGED_OUT] >>> ");
-    }
-
-    public static String getUserInput() {
-        return scanner.nextLine();
-    }
-
-    public static void displayHelp() {
-        System.out.println("register <USERNAME> <PASSWORD> <EMAIL> - to create an account");
-        System.out.println("login <USERNAME> <PASSWORD> - to play chess");
-        System.out.println("quit - playing chess");
-        System.out.println("help - with possible commands");
-    }
-
-    public static void quit() {
-        System.out.println("Exiting the program...");
-        System.exit(0);
-    }
-
-    public static void login(String username, String password) {
-        try {
-            UserData userData = new UserData(username, password, null);
-            AuthData authData = serverFacade.login(userData);
-            if (authData != null) {
-                System.out.println("Login successful!");
-                PostLoginUI.displayMenu();
-            } else {
-                System.out.println("Login failed. Please try again.");
+    public void display() {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("Pre-Login Commands: Help, Quit, Login, Register");
+            String command = scanner.nextLine().trim().toLowerCase();
+            switch (command) {
+                case "help":
+                    displayHelp();
+                    break;
+                case "quit":
+                    System.out.println("Goodbye!");
+                    return;
+                case "login":
+                    login(scanner);
+                    break;
+                case "register":
+                    register(scanner);
+                    break;
+                default:
+                    System.out.println("Unknown command. Type 'Help' for a list of commands.");
+                    break;
             }
-        } catch (Exception e) {
-            System.out.println("Error logging in: " + e.getMessage());
         }
     }
 
-    public static void register(String username, String password, String email) {
+    private void displayHelp() {
+        System.out.println("Available commands:");
+        System.out.println("Help - Displays this help message.");
+        System.out.println("Quit - Exits the program.");
+        System.out.println("Login - Logs into the application.");
+        System.out.println("Register - Registers a new user.");
+    }
+
+    private void login(Scanner scanner) {
+        System.out.print("Username: ");
+        String username = scanner.nextLine().trim();
+        System.out.print("Password: ");
+        String password = scanner.nextLine().trim();
+
+        UserData loginRequest = new UserData(username, password, null);
         try {
-            UserData userData = new UserData(username, password, email);
-            AuthData authData = serverFacade.register(userData);
-            if (authData != null) {
-                System.out.println("Registration successful! Logging in...");
-                PostLoginUI.displayMenu();
-            } else {
-                System.out.println("Registration failed. Please try again.");
-            }
+            AuthData response = serverFacade.login(loginRequest);
+            System.out.println("Login successful! Auth token: " + response.getAuthToken());
+            new PostLoginUI(serverFacade, response).display();
         } catch (Exception e) {
-            System.out.println("Error registering: " + e.getMessage());
+            System.out.println("Login failed: " + e.getMessage());
+        }
+    }
+
+    private void register(Scanner scanner) {
+        System.out.print("Username: ");
+        String username = scanner.nextLine().trim();
+        System.out.print("Password: ");
+        String password = scanner.nextLine().trim();
+        System.out.print("Email: ");
+        String email = scanner.nextLine().trim();
+
+        UserData registerRequest = new UserData(username, password, email);
+        try {
+            AuthData response = serverFacade.register(registerRequest);
+            System.out.println("Registration successful! Auth token: " + response.getAuthToken());
+            new PostLoginUI(serverFacade, response).display();
+        } catch (Exception e) {
+            System.out.println("Registration failed: " + e.getMessage());
         }
     }
 }

@@ -1,121 +1,139 @@
 package ui;
 
 import java.util.Scanner;
+
 import ServerUtils.ServerFacade;
+import model.AuthData;
 import model.GameData;
-import chess.ChessGame;
-import dataaccess.DataAccessException;
+import request.CreateGameRequest;
 
 public class PostLoginUI {
-    private static Scanner scanner = new Scanner(System.in);
-    private static ServerFacade serverFacade = new ServerFacade("http://localhost:8080"); // Example URL
+    private final ServerFacade serverFacade;
+    private final AuthData authData;
 
-    public static void displayMenu() {
-        System.out.print("[LOGGED_IN] >>> ");
+    public PostLoginUI(ServerFacade serverFacade, AuthData authData) {
+        this.serverFacade = serverFacade;
+        this.authData = authData;
+    }
+
+    public void display() {
+        Scanner scanner = new Scanner(System.in);
         while (true) {
-            String[] input = scanner.nextLine().split(" ");
-            String command = input[0].toLowerCase();
-
+            System.out.println("Post-Login Commands: Help, Logout, Create Game, List Games, Play Game, Observe Game");
+            String command = scanner.nextLine().trim().toLowerCase();
             switch (command) {
                 case "help":
                     displayHelp();
                     break;
                 case "logout":
                     logout();
+                    return;
+                case "create game":
+                    createGame(scanner);
                     break;
-                case "create":
-                    if (input.length == 2) {
-                        createGame(input[1]);
-                    } else {
-                        System.out.println("Usage: create <NAME>");
-                    }
-                    break;
-                case "list":
+                case "list games":
                     listGames();
                     break;
-                case "join":
-                    if (input.length == 3) {
-                        joinGame(input[1], input[2]);
-                    } else {
-                        System.out.println("Usage: join <ID> [WHITE|BLACK]");
-                    }
+                case "play game":
+                    playGame(scanner);
                     break;
-                case "observe":
-                    if (input.length == 2) {
-                        observeGame(input[1]);
-                    } else {
-                        System.out.println("Usage: observe <ID>");
-                    }
-                    break;
-                case "quit":
-                    quit();
+                case "observe game":
+                    observeGame(scanner);
                     break;
                 default:
-                    System.out.println("Invalid command. Type 'help' for available commands.");
+                    System.out.println("Unknown command. Type 'Help' for a list of commands.");
+                    break;
             }
-            System.out.print("[LOGGED_IN] >>> ");
         }
     }
 
-    public static void displayHelp() {
-        System.out.println("help - with possible commands");
-        System.out.println("logout - when you are done");
-        System.out.println("create <NAME> - a game");
-        System.out.println("list - games");
-        System.out.println("join <ID> [WHITE|BLACK] - a game");
-        System.out.println("observe <ID> - a game");
-        System.out.println("quit - playing chess");
+    private void displayHelp() {
+        System.out.println("Available commands:");
+        System.out.println("Help - Displays this help message.");
+        System.out.println("Logout - Logs out of the application.");
+        System.out.println("Create Game - Creates a new game.");
+        System.out.println("List Games - Lists all available games.");
+        System.out.println("Play Game - Joins a game as a player.");
+        System.out.println("Observe Game - Observes a game.");
     }
 
-    public static void logout() {
-        try {
-            serverFacade.logout();
-            System.out.println("Logged out successfully.");
-            PreLoginUI.displayWelcomeMessage();
-            PreLoginUI.displayMenu();
-        } catch (DataAccessException e) {
-            System.out.println("Error logging out: " + e.getMessage());
-        }
+    private void logout() {
+        System.out.println("Logging out...");
+        // Implement the logout logic if needed
+        new PreLoginUI(serverFacade).display();
     }
 
-    public static void createGame(String gameName) {
+    private void createGame(Scanner scanner) {
+        System.out.print("Game name: ");
+        String gameName = scanner.nextLine().trim();
+
+        CreateGameRequest gameRequest = new CreateGameRequest(gameName);
         try {
-            GameData gameData = new GameData(0, "", "", gameName, new ChessGame(), "");
-            serverFacade.createGame(gameData);
+            serverFacade.createGame(gameRequest);
             System.out.println("Game created successfully!");
-        } catch (DataAccessException e) {
-            System.out.println("Error creating game: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Failed to create game: " + e.getMessage());
         }
     }
 
-    public static void listGames() {
+    private void listGames() {
         try {
             GameData[] games = serverFacade.listGames();
-            int index = 1;
-            for (GameData game : games) {
-                System.out.println(index + ". " + game.getGameName() + " - White: " + game.getWhiteUsername() + ", Black: " + game.getBlackUsername());
-                index++;
+            if (games.length == 0) {
+                System.out.println("No games available.");
+            } else {
+                System.out.println("Available games:");
+                for (int i = 0; i < games.length; i++) {
+                    GameData game = games[i];
+                    System.out.printf("%d. %s (White: %s, Black: %s)%n", i + 1, game.getGameName(), game.getWhiteUsername(), game.getBlackUsername());
+                }
             }
-        } catch (DataAccessException e) {
-            System.out.println("Error listing games: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Failed to list games: " + e.getMessage());
         }
     }
 
-    public static void joinGame(String gameId, String color) {
+    private void playGame(Scanner scanner) {
+        listGames();
+        System.out.print("Enter game number to join: ");
+        int gameNumber = Integer.parseInt(scanner.nextLine().trim());
+
+        System.out.print("Choose color (WHITE/BLACK): ");
+        String color = scanner.nextLine().trim().toUpperCase();
+
         try {
-            ChessGame chessGame = serverFacade.joinGame(gameId, color);
+            GameData[] games = serverFacade.listGames();
+            if (gameNumber < 1 || gameNumber > games.length) {
+                System.out.println("Invalid game number.");
+                return;
+            }
+
+            GameData game = games[gameNumber - 1];
+            GameData joinRequest = new GameData(game.getGameID(), color.equals("WHITE") ? authData.getUsername() : game.getWhiteUsername(), color.equals("BLACK") ? authData.getUsername() : game.getBlackUsername(), game.getGameName(), null, color);
+            serverFacade.joinGame(joinRequest);
             System.out.println("Joined game successfully!");
-        } catch (DataAccessException e) {
-            System.out.println("Error joining game: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Failed to join game: " + e.getMessage());
         }
     }
 
-    public static void observeGame(String gameId) {
-        // Implement observe game logic (Phase 6)
-    }
+    private void observeGame(Scanner scanner) {
+        listGames();
+        System.out.print("Enter game number to observe: ");
+        int gameNumber = Integer.parseInt(scanner.nextLine().trim());
 
-    public static void quit() {
-        System.out.println("Exiting the game...");
-        System.exit(0);
+        try {
+            GameData[] games = serverFacade.listGames();
+            if (gameNumber < 1 || gameNumber > games.length) {
+                System.out.println("Invalid game number.");
+                return;
+            }
+
+            GameData game = games[gameNumber - 1];
+            // Implement observe game logic if needed
+            System.out.println("Observing game: " + game.getGameName());
+        } catch (Exception e) {
+            System.out.println("Failed to observe game: " + e.getMessage());
+        }
     }
 }

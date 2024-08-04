@@ -38,8 +38,8 @@ public class Server {
         * Spark.exception(Exception.class, (exception, request, response) -> {
         *     response.status(500);
         *     response.body("{\"message\":\"Internal Server Error: " + exception.getMessage() + "\"}");
-        * });
          */
+
 
 
         // Await initialization

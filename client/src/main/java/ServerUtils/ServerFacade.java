@@ -1,55 +1,136 @@
 package ServerUtils;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.BufferedReader;
 import com.google.gson.Gson;
-import model.UserData;
+import java.io.*;
+import java.net.*;
 import model.AuthData;
+import model.GameData;
+import model.UserData;
+import request.CreateGameRequest;
+import response.CreateGameResult;
 
 public class ServerFacade {
-    /**
-     *     This will handle all the server HHTP requests from UI to the server/database
-     */
-    private static final String BASE_URL = "http://localhost:8080";
-    private static final Gson gson = new Gson();
 
-    public AuthData register(UserData request) {
-        return execute("/user", "POST", request, AuthData.class);
+    private final String serverUrl;
+    private AuthData authData;
+    private Gson gson = new Gson();
+
+    public ServerFacade(int port) {
+        this.serverUrl = "http://localhost:" + port;
     }
 
-    public AuthData login(UserData request) {
-        return execute("/login", "POST", request, AuthData.class);
+    public void setAuthData(AuthData authData) {
+        this.authData = authData;
     }
 
-    private <T> T execute(String endpoint, String method, Object requestData, Class<T> responseType) {
-        try {
-            URL url = new URL(BASE_URL + endpoint);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod(method);
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
-            con.setRequestProperty("Accept", "application/json");
-            con.setDoOutput(true);
-
-            if (requestData != null) {
-                try (OutputStream os = con.getOutputStream()) {
-                    byte[] input = gson.toJson(requestData).getBytes("utf-8");
-                    os.write(input, 0, input.length);
-                }
-            }
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
-            String inputLine;
-            StringBuilder content = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-            return gson.fromJson(content.toString(), responseType);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+    public AuthData register(UserData request) throws ResponseException {
+        var path = "/user";
+        System.out.println("Sending register request: " + gson.toJson(request));
+        AuthData out = this.makeRequest("POST", path, request, AuthData.class);
+        if (out != null) {
+            this.authData = out;
         }
+        System.out.println("Received register response: " + gson.toJson(out));
+        return out;
+    }
+
+    public AuthData login(UserData request) throws ResponseException {
+        var path = "/session";
+        System.out.println("Sending login request: " + gson.toJson(request));
+        AuthData out = this.makeRequest("POST", path, request, AuthData.class);
+        if (out != null) {
+            this.authData = out;
+        }
+        System.out.println("Received login response: " + gson.toJson(out));
+        return out;
+    }
+
+    public void clearDatabase() throws ResponseException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null, Void.class);
+    }
+
+    public GameData createGame(CreateGameRequest request) throws ResponseException {
+        var path = "/game";
+        System.out.println("Sending create game request: " + gson.toJson(request));
+        GameData out = this.makeRequest("POST", path, request, GameData.class);
+        System.out.println("Received create game response: " + gson.toJson(out));
+        return out;
+    }
+
+    public GameData[] listGames() throws ResponseException {
+        var path = "/game";
+        //System.out.println("Sending list game request: " + gson.toJson(request));
+        GameData[] out = this.makeRequest("GET", path, null, GameData[].class);
+        System.out.println("Received list games response: " + gson.toJson(out));
+        return out;
+    }
+
+    public void joinGame(GameData request) throws ResponseException {
+        var path = "/game";
+        this.makeRequest("PUT", path, request, null);
+    }
+
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
+        try {
+            URL url = new URL(serverUrl + path);
+            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+            http.setRequestMethod(method);
+            http.setDoOutput(true);
+
+            if (authData != null && authData.getAuthToken() != null) {
+                String authHeader = "Bearer " + authData.getAuthToken();
+                http.addRequestProperty("Authorization", authHeader);
+                System.out.println("Auth Token Sent: " + authHeader);
+            }
+
+            writeBody(request, http);
+            http.connect();
+            throwIfNotSuccessful(http);
+
+            // Read the response body
+            String responseBody = readResponseBody(http);
+            System.out.println("Received response body: " + responseBody);
+
+            // Deserialize the response body
+            T response = gson.fromJson(responseBody, responseClass);
+            System.out.println("Deserialized response: " + gson.toJson(response));
+
+            return response;
+        } catch (Exception ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    private static void writeBody(Object request, HttpURLConnection http) throws IOException {
+        if (request != null) {
+            http.addRequestProperty("Content-Type", "application/json");
+            String reqData = new Gson().toJson(request);
+            try (OutputStream reqBody = http.getOutputStream()) {
+                reqBody.write(reqData.getBytes());
+            }
+        }
+    }
+
+    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
+        var status = http.getResponseCode();
+        if (!isSuccessful(status)) {
+            throw new ResponseException(status, "failure, HTTP connection not successful: " + status);
+        }
+    }
+
+    private static String readResponseBody(HttpURLConnection http) throws IOException {
+        StringBuilder responseBody = new StringBuilder();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(http.getInputStream()))) {
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                responseBody.append(inputLine);
+            }
+        }
+        return responseBody.toString();
+    }
+
+    private boolean isSuccessful(int status) {
+        return status / 100 == 2;
     }
 }

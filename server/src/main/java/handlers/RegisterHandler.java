@@ -9,16 +9,11 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/*
-void storeUserPassword(String username, String password) {
-   String hashedPassword = BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
-
-   // write the hashed password in database along with the user's other information
-   writeHashedPasswordToDatabase(username, hashedPassword);
-}
- */
 public class RegisterHandler implements Route {
+    private static final Logger logger = Logger.getLogger(RegisterHandler.class.getName());
     private final RegisterService registerService;
     private final Gson gson = new Gson();
 
@@ -28,24 +23,30 @@ public class RegisterHandler implements Route {
 
     @Override
     public Object handle(Request req, Response res) {
+        logger.info("Received registration request");
         RegisterRequest request = gson.fromJson(req.body(), RegisterRequest.class);
         RegisterResult result;
         try {
+            logger.info("Processing registration for user: " + request.getUsername());
             result = registerService.register(request);
-            res.status(200); //Success
+            res.status(200); // Success
+            logger.info("User registered successfully: " + request.getUsername());
         } catch (DataAccessException e) {
+            logger.log(Level.SEVERE, "DataAccessException during registration: " + e.getMessage(), e);
             if (e.getMessage().contains("Missing required fields")) {
-                res.status(400); //Bad Request
+                res.status(400); // Bad Request
             } else if (e.getMessage().contains("User already exists")) {
-                res.status(403); //Forbidden
+                res.status(403); // Forbidden
             } else {
-                res.status(500); //Internal Server Error
+                res.status(500); // Internal Server Error
             }
             result = new RegisterResult(e.getMessage());
         } catch (Exception e) {
-            res.status(500); //Internal Server Error
+            logger.log(Level.SEVERE, "Exception during registration: " + e.getMessage(), e);
+            res.status(500); // Internal Server Error
             result = new RegisterResult("Internal Server Error: " + e.getMessage());
         }
+        logger.info("Registration response: " + gson.toJson(result));
         return gson.toJson(result);
     }
 }

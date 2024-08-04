@@ -20,19 +20,21 @@ public class CreateGameHandler implements Route {
     }
 
     @Override
-    //Handle the HTTP request to create a game
     public Object handle(Request req, Response res) throws Exception {
-        //parse the create game request from the request body
+        System.out.println("CreateGameHandler: Received create game request.");
         CreateGameRequest request = gson.fromJson(req.body(), CreateGameRequest.class);
-        //Get the authorization token from the request headers
         String authToken = req.headers("Authorization");
-        CreateGameResult response;
 
+        if (authToken != null && authToken.startsWith("Bearer ")) {
+            authToken = authToken.substring("Bearer ".length());
+        }
+
+        CreateGameResult response;
         try {
             response = createGameService.createGame(request, authToken);
             res.status(200);
         } catch (DataAccessException e) {
-            res.status(401);// Status for unauthorized
+            res.status(401);
             response = new CreateGameResult("Error: unauthorized");
         }
 
