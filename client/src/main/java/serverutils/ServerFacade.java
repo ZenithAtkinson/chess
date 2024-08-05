@@ -1,4 +1,4 @@
-package ServerUtils;
+package serverutils;
 
 import com.google.gson.Gson;
 import java.io.*;

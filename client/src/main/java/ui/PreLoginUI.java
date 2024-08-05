@@ -2,7 +2,7 @@ package ui;
 
 import java.util.Scanner;
 
-import ServerUtils.ServerFacade;
+import serverutils.ServerFacade;
 import model.UserData;
 import model.AuthData;
 
@@ -17,7 +17,8 @@ public class PreLoginUI {
 
     public void display() {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Welcome to Chess 240. Type, " + SET_TEXT_BOLD  + SET_TEXT_UNDERLINE + "\"Help\""+RESET_TEXT_UNDERLINE + RESET_TEXT_BOLD_FAINT+", to get started.");
+        System.out.println("Welcome to Chess 240. Type, " + SET_TEXT_BOLD  + SET_TEXT_UNDERLINE + "\"Help\""+
+                RESET_TEXT_UNDERLINE + RESET_TEXT_BOLD_FAINT+", to get started.");
         while (true) {
             //System.out.println("Pre-Login Commands: Help, Quit, Login, Register");
             String command = scanner.nextLine().trim().toLowerCase();

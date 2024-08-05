@@ -1,4 +1,4 @@
-package ServerUtils;
+package serverutils;
 
 public class ResponseException extends Exception {
     //Implemented because the PetShop code does it
@@ -8,8 +8,6 @@ public class ResponseException extends Exception {
         super(message);
         this.statusCode = statusCode;
     }
+    //public int statusCode() {}
 
-    public int StatusCode() {
-        return statusCode;
-    }
 }

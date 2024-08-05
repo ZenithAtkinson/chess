@@ -1,5 +1,4 @@
-import ui.BoardPrinter;
-import ServerUtils.ServerFacade;
+import serverutils.ServerFacade;
 import ui.PreLoginUI;
 
 public class Main {

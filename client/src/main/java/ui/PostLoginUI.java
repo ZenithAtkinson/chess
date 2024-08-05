@@ -3,7 +3,7 @@ package ui;
 import java.util.List;
 import java.util.Scanner;
 
-import ServerUtils.ServerFacade;
+import serverutils.ServerFacade;
 import chess.ChessBoard;
 import model.AuthData;
 import model.GameData;
