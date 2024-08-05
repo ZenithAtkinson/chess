@@ -21,6 +21,7 @@ public class PostLoginUI {
         this.boardPrinter = new BoardPrinter();
     }
 
+    //REMEMBER: Escape sequences for flavor text.
     public void display() {
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -71,6 +72,11 @@ public class PostLoginUI {
         System.out.print("Game name: ");
         String gameName = scanner.nextLine().trim();
 
+        if (gameName.isEmpty()) {
+            System.out.println("Failed to create game: Game name cannot be empty.");
+            return;
+        }
+
         CreateGameRequest gameRequest = new CreateGameRequest(gameName);
         try {
             serverFacade.createGame(gameRequest);
@@ -89,7 +95,7 @@ public class PostLoginUI {
                 System.out.println("Available games:");
                 for (int i = 0; i < games.size(); i++) {
                     GameData game = games.get(i);
-                    // Double check formatting(?)
+                    //Double check formatting(?)
                     System.out.printf("%d. %s (White: %s, Black: %s)%n", i + 1, game.getGameName(), game.getWhiteUsername(), game.getBlackUsername());
                 }
             }
@@ -101,12 +107,17 @@ public class PostLoginUI {
     private void playGame(Scanner scanner) {
         listGames();
         System.out.print("Enter game number to join: ");
-        int gameNumber = Integer.parseInt(scanner.nextLine().trim());
-
-        System.out.print("Choose color (WHITE/BLACK): ");
-        String color = scanner.nextLine().trim().toUpperCase();
-
         try {
+            int gameNumber = Integer.parseInt(scanner.nextLine().trim());
+
+            System.out.print("Choose color (WHITE/BLACK): ");
+            String color = scanner.nextLine().trim().toUpperCase();
+
+            if (!color.equals("WHITE") && !color.equals("BLACK")) {
+                System.out.println("Invalid color choice. Please enter WHITE or BLACK.");
+                return;
+            }
+
             List<GameData> games = serverFacade.listGames();
             if (gameNumber < 1 || gameNumber > games.size()) {
                 System.out.println("Invalid game number.");
@@ -118,7 +129,7 @@ public class PostLoginUI {
             serverFacade.joinGame(joinRequest);
             System.out.println("Joined game successfully!");
 
-            //Print the chessboard
+            // Print chessboard
             ChessBoard board = new ChessBoard();
             board.resetBoard();
             System.out.println("Chessboard from White's perspective:");
@@ -126,6 +137,8 @@ public class PostLoginUI {
             System.out.println("Chessboard from Black's perspective:");
             boardPrinter.printBoardReversed(board);
 
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid game number. Please enter a valid number.");
         } catch (Exception e) {
             System.out.println("Failed to join game: " + e.getMessage());
         }
@@ -134,9 +147,9 @@ public class PostLoginUI {
     private void observeGame(Scanner scanner) {
         listGames();
         System.out.print("Enter game number to observe: ");
-        int gameNumber = Integer.parseInt(scanner.nextLine().trim());
-
         try {
+            int gameNumber = Integer.parseInt(scanner.nextLine().trim());
+
             List<GameData> games = serverFacade.listGames();
             if (gameNumber < 1 || gameNumber > games.size()) {
                 System.out.println("Invalid game number.");
@@ -144,10 +157,10 @@ public class PostLoginUI {
             }
 
             GameData game = games.get(gameNumber - 1);
-            //Implement observe game logic if needed
+            //Additional observe game fields.?
             System.out.println("Observing game: " + game.getGameName());
 
-            //Print the chessboard
+            //Print  chessboard
             ChessBoard board = new ChessBoard();
             board.resetBoard();
             System.out.println("Chessboard from White's perspective:");
@@ -155,6 +168,8 @@ public class PostLoginUI {
             System.out.println("Chessboard from Black's perspective:");
             boardPrinter.printBoardReversed(board);
 
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid game number. Please enter a valid number.");
         } catch (Exception e) {
             System.out.println("Failed to observe game: " + e.getMessage());
         }

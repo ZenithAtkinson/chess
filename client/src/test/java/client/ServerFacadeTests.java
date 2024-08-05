@@ -30,8 +30,8 @@ public class ServerFacadeTests {
     static void stopServer() {
         server.stop();
     }
-
-    @BeforeEach // The database needs to be constantly reset to avoid any strange and unexpected errors in the "pass" tests.
+    // I need to clear the database constantly to avoid any strange and unexpected errors in the "pass" tests.
+    @BeforeEach
     public void clearDatabase() {
         try {
             facade.clearDatabase();
@@ -152,8 +152,8 @@ public class ServerFacadeTests {
     @Test //fail
     void joinGameWithoutLogin() {
         assertThrows(Exception.class, () -> {
-            JoinGameRequest joinRequest = new JoinGameRequest(999, "WHITE");
-                //999 is non existent game... results in failure
+            JoinGameRequest joinRequest = new JoinGameRequest(69, "WHITE");
+                //69 is non existent game... results in failure
             facade.joinGame(joinRequest);
         });
     }

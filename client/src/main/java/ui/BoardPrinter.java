@@ -64,7 +64,7 @@ public class BoardPrinter {
         System.out.println("h g f e d c b a");
     }
 
-    // Tester board print with set pieces on board to test if any given board will be properly printed
+    // Tester board print with set pieces on board to test if any given board will be properly printed (hopefully)
     public static class BoardPrinterTest {
 
         public static void main(String[] args) {

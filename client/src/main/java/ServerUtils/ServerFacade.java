@@ -49,7 +49,7 @@ public class ServerFacade {
         System.out.println("Received login response: " + gson.toJson(out));
         return out;
     }
-    // Removes everything, very useful in tests
+    // Removes everything, very useful in tests (mostly used there)
     public void clearDatabase() throws ResponseException {
         var path = "/db";
         this.makeRequest("DELETE", path, null, Void.class);
@@ -67,7 +67,7 @@ public class ServerFacade {
         var path = "/game";
         ListGamesResult response = this.makeRequest("GET", path, null, ListGamesResult.class);
         System.out.println("Received list games response: " + gson.toJson(response));
-        return response.games();  // .games() method of record to retrieve the list
+        return response.games();  // .games() method of record to retrieve the list. Doesnt catch null ptr...
     }
     //Uses JoinGameRequest to join
     public void joinGame(JoinGameRequest request) throws ResponseException {
@@ -140,16 +140,27 @@ public class ServerFacade {
         return responseBody.toString();
     }
 
+    /**
+     * Reads the error response body from an HttpURLConnection.
+     * @param http The HttpURLConnection object from which to read the error response.
+     * @return A string containing the entire error response body.
+     * @throws IOException If an I/O error occurs.
+     */
     private static String readErrorResponseBody(HttpURLConnection http) throws IOException {
         StringBuilder responseBody = new StringBuilder();
+
+        //BufferedReader: for to read from the error of the HttpURLConnection
         try (BufferedReader in = new BufferedReader(new InputStreamReader(http.getErrorStream()))) {
             String inputLine;
+            //append continually to body
             while ((inputLine = in.readLine()) != null) {
                 responseBody.append(inputLine);
             }
         }
+
         return responseBody.toString();
     }
+
 
     //PetShop method of finding error codes
     private boolean isSuccessful(int status) {

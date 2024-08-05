@@ -55,10 +55,15 @@ public class PreLoginUI {
         System.out.print("Password: ");
         String password = scanner.nextLine().trim();
 
+        if (username.isEmpty() || password.isEmpty()) {
+            System.out.println("Login failed: Both Username and Password must be filled out.");
+            return;
+        }
+
         UserData loginRequest = new UserData(username, password, null);
         try {
             AuthData response = serverFacade.login(loginRequest);
-            System.out.println("Login successful! Auth token: " + response.getAuthToken());
+            System.out.println("Login successful!");
             new PostLoginUI(serverFacade, response).display();
         } catch (Exception e) {
             System.out.println("Login failed: " + e.getMessage());
@@ -73,13 +78,29 @@ public class PreLoginUI {
         System.out.print("Email: ");
         String email = scanner.nextLine().trim();
 
+        if (username.isEmpty() || password.isEmpty() || email.isEmpty()) {
+            System.out.println("Registration failed: All fields (Username, Password, Email) must be filled out.");
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            System.out.println("Registration failed: Invalid email format.");
+            return;
+        }
+
         UserData registerRequest = new UserData(username, password, email);
         try {
             AuthData response = serverFacade.register(registerRequest);
-            System.out.println("Registration successful! Auth token: " + response.getAuthToken());
+            System.out.println("Registration successful!");
             new PostLoginUI(serverFacade, response).display();
         } catch (Exception e) {
             System.out.println("Registration failed: " + e.getMessage());
         }
+    }
+
+    private boolean isValidEmail(String email) {
+        //Basic regex for email chekcer:
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        return email.matches(emailRegex);
     }
 }
