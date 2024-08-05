@@ -164,6 +164,30 @@ public class ServerFacadeTests {
         });
     }
 
+    @Test //pass
+    void logoutPass() throws Exception {
+
+        UserData registerRequest = new UserData("player6", "yourmom", "p6@email.com");
+        AuthData authData = facade.register(registerRequest);
+        facade.setAuthData(authData);
+
+        //Erroring here
+        facade.logout();
+
+        //Try to list games after logout, should throw exception as the user is logged out
+        assertThrows(Exception.class, () -> {
+            facade.listGames();
+        });
+    }
+
+    @Test //fail (WithoutLogin)
+    void logoutFail() {
+        // Perform logout without logging in
+        assertThrows(Exception.class, () -> {
+            facade.logout();
+        });
+    }
+
     @Test
     void testBoardPrinter() {
         ChessBoard board = new ChessBoard();

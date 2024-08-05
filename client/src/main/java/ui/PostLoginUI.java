@@ -65,6 +65,12 @@ public class PostLoginUI {
 
     private void logout() {
         System.out.println("Logging out...");
+        try {
+            serverFacade.logout();
+            System.out.println("Logged out successfully!");
+        } catch (Exception e) {
+            System.out.println("Failed to log out: " + e.getMessage());
+        }
         new PreLoginUI(serverFacade).display();
     }
 

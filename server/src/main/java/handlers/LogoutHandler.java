@@ -18,16 +18,22 @@ public class LogoutHandler implements Route {
     @Override
     public Object handle(Request req, Response res) throws Exception {
         String authToken = req.headers("Authorization");
+
+        if (authToken != null && authToken.startsWith("Bearer ")) {
+            authToken = authToken.substring(7); // Remove "Bearer " prefix
+        }
+
         try {
             logoutService.logout(authToken);
             res.status(200);
-            return gson.toJson(new LogoutResponse(true, "Logged out successfully")); //ok
+            return gson.toJson(new LogoutResponse(true, "Logged out successfully"));
         } catch (Exception e) {
             res.status(401);
-            return gson.toJson(new LogoutResponse(false, "Error: Unauthorized")); //unauthorized
+            return gson.toJson(new LogoutResponse(false, "Error: Unauthorized"));
         }
     }
-    //Inner class for logout response
+
+    // Inner class for logout response
     private static class LogoutResponse {
         private boolean success;
         private String message;
@@ -36,7 +42,7 @@ public class LogoutHandler implements Route {
             this.success = success;
             this.message = message;
         }
-        //Check if the logout was successful
+
         public boolean isSuccess() {
             return success;
         }
