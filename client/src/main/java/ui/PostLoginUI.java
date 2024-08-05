@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Scanner;
 
 import ServerUtils.ServerFacade;
-import ui.BoardPrinter;
 import chess.ChessBoard;
 import model.AuthData;
 import model.GameData;

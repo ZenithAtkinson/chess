@@ -11,7 +11,6 @@ import model.GameData;
 import model.UserData;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
-import response.CreateGameResult;
 import response.ListGamesResult;
 
 public class ServerFacade {
