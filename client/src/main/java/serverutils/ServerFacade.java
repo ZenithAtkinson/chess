@@ -103,7 +103,7 @@ public class ServerFacade {
             }
             return null;
         } catch (Exception ex) {
-            throw new ResponseException(500, "make request error: " + ex.getMessage());
+            throw new ResponseException(500, "Invalid username or password"); // + ex.getMessage())
         }
     }
 

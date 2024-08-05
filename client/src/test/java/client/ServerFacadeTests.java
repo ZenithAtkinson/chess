@@ -125,6 +125,8 @@ public class ServerFacadeTests {
         //System.out.println("List Games Test - GameData Array: " + response);
         assertNotNull(response);
         assertFalse(response.isEmpty());
+        //System.out.println(response.toString());
+        // Assert a hardcoded value for success to ensure it worked. Be specific! See println above
     }
 
     @Test //fail (WithoutLogin)
@@ -171,7 +173,6 @@ public class ServerFacadeTests {
         AuthData authData = facade.register(registerRequest);
         facade.setAuthData(authData);
 
-        //Erroring here
         facade.logout();
 
         //Try to list games after logout, should throw exception as the user is logged out
