@@ -100,7 +100,7 @@ public class PreLoginUI {
 
     private boolean isValidEmail(String email) {
         //Basic regex for email chekcer:
-        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$"; https://www.w3schools.com/java/java_regex.asp
         return email.matches(emailRegex);
     }
 }
