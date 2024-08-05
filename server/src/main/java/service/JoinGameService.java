@@ -20,32 +20,32 @@ public class JoinGameService {
     }
 
     public void joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
-        LOGGER.debug("Starting joinGame with request: {}, authToken: {}", request, authToken);
+        //LOGGER.debug("Starting joinGame with request: {}, authToken: {}", request, authToken);
 
         // Get authentication data using the auth token
         AuthData authData = authDAO.getAuthData(authToken);
         if (authData == null) {
-            LOGGER.error("Unauthorized access with token: {}", authToken);
+            //LOGGER.error("Unauthorized access with token: {}", authToken);
             throw new DataAccessException("Unauthorized"); // Throw exception if unauthorized
         }
 
         // Get game data
         GameData gameData = gameDAO.getGame(request.getGameID());
         if (gameData == null) {
-            LOGGER.error("Game not found for ID: {}", request.getGameID());
+            //LOGGER.error("Game not found for ID: {}", request.getGameID());
             throw new DataAccessException("Game not found"); // Throw exception if game not found
         }
 
         String playerColor = request.getPlayerColor();
         if (playerColor == null || (!playerColor.equals("WHITE") && !playerColor.equals("BLACK"))) {
-            LOGGER.error("Invalid player color: {}", playerColor);
+            //LOGGER.error("Invalid player color: {}", playerColor);
             throw new DataAccessException("Invalid player color");
         }
 
         // Check if the player color is already taken
         if (("WHITE".equals(playerColor) && gameData.getWhiteUsername() != null && !gameData.getWhiteUsername().isEmpty()) ||
                 ("BLACK".equals(playerColor) && gameData.getBlackUsername() != null && !gameData.getBlackUsername().isEmpty())) {
-            LOGGER.error("Player color already taken: {}", playerColor);
+            //LOGGER.error("Player color already taken: {}", playerColor);
             throw new DataAccessException("Player color already taken"); // Throw exception if player color is already taken
         }
 
@@ -58,7 +58,7 @@ public class JoinGameService {
 
         // Update the game data in the database
         gameDAO.updateGame(gameData);
-        LOGGER.debug("Successfully joined game with ID: {}", request.getGameID());
+        //LOGGER.debug("Successfully joined game with ID: {}", request.getGameID());
     }
 }
 

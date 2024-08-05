@@ -30,23 +30,23 @@ public class ServerFacade {
     //Double check AuthData values
     public AuthData register(UserData request) throws ResponseException {
         var path = "/user";
-        System.out.println("Sending register request: " + gson.toJson(request));
+        //System.out.println("Sending register request: " + gson.toJson(request));
         AuthData out = this.makeRequest("POST", path, request, AuthData.class);
         if (out != null) {
             this.authData = out;
         }
-        System.out.println("Received register response: " + gson.toJson(out));
+        //System.out.println("Received register response: " + gson.toJson(out));
         return out;
     }
     // Double check AuthData values
     public AuthData login(UserData request) throws ResponseException {
         var path = "/session";
-        System.out.println("Sending login request: " + gson.toJson(request));
+        //System.out.println("Sending login request: " + gson.toJson(request));
         AuthData out = this.makeRequest("POST", path, request, AuthData.class);
         if (out != null) {
             this.authData = out;
         }
-        System.out.println("Received login response: " + gson.toJson(out));
+        //System.out.println("Received login response: " + gson.toJson(out));
         return out;
     }
     // Removes everything, very useful in tests (mostly used there)
@@ -57,16 +57,16 @@ public class ServerFacade {
     //Create a game with request
     public GameData createGame(CreateGameRequest request) throws ResponseException {
         var path = "/game";
-        System.out.println("Sending create game request: " + gson.toJson(request));
+        //System.out.println("Sending create game request: " + gson.toJson(request));
         GameData out = this.makeRequest("POST", path, request, GameData.class);
-        System.out.println("Received create game response: " + gson.toJson(out));
+        //System.out.println("Received create game response: " + gson.toJson(out));
         return out;
     }
     //List games, doesnt use request.
     public List<GameData> listGames() throws ResponseException {
         var path = "/game";
         ListGamesResult response = this.makeRequest("GET", path, null, ListGamesResult.class);
-        System.out.println("Received list games response: " + gson.toJson(response));
+        //System.out.println("Received list games response: " + gson.toJson(response));
         return response.games();  // .games() method of record to retrieve the list. Doesnt catch null ptr...
     }
     //Uses JoinGameRequest to join
@@ -85,7 +85,7 @@ public class ServerFacade {
             if (authData != null && authData.getAuthToken() != null) {
                 String authHeader = "Bearer " + authData.getAuthToken();
                 http.addRequestProperty("Authorization", authHeader);
-                System.out.println("Auth Token Sent: " + authHeader);
+                //System.out.println("Auth Token Sent: " + authHeader);
             }
 
             writeBody(request, http);
@@ -94,17 +94,17 @@ public class ServerFacade {
 
             //Read response body
             String responseBody = readResponseBody(http);
-            System.out.println("Received response body: " + responseBody);
+            //System.out.println("Received response body: " + responseBody);
 
             //Deserialize  response body
             if (responseClass != null) {
                 T response = gson.fromJson(responseBody, responseClass);
-                System.out.println("Deserialized response: " + gson.toJson(response));
+                //System.out.println("Deserialized response: " + gson.toJson(response));
                 return response;
             }
             return null;
         } catch (Exception ex) {
-            throw new ResponseException(500, "make request error:" + ex.getMessage());
+            throw new ResponseException(500, "make request error: " + ex.getMessage()); //CHANGE THIS ERROR?
         }
     }
 

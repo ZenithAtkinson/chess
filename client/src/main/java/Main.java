@@ -4,7 +4,7 @@ import ui.PreLoginUI;
 public class Main {
     public static void main(String[] args) {
 
-        // ServerFacade with the server port
+        //ServerFacade : at 8080
         ServerFacade serverFacade = new ServerFacade(8080);
 
         // Display: PreLoginUI (which handles PostLoginUI)

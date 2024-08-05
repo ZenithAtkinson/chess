@@ -10,7 +10,11 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import request.CreateGameRequest;
+import ui.BoardPrinter;
+import chess.ChessBoard;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.List;
 
 public class ServerFacadeTests {
@@ -30,6 +34,7 @@ public class ServerFacadeTests {
     static void stopServer() {
         server.stop();
     }
+
     // I need to clear the database constantly to avoid any strange and unexpected errors in the "pass" tests.
     @BeforeEach
     public void clearDatabase() {
@@ -41,16 +46,16 @@ public class ServerFacadeTests {
     }
 
     @Test //pass
-    void register() throws Exception {
+    void registerPass() throws Exception {
         UserData request = new UserData("player1", "yourmom", "p1@email.com");
         AuthData authData = facade.register(request);
-        System.out.println("Register Test - AuthData: " + authData);
+        //System.out.println("Register Test - AuthData: " + authData);
         assertNotNull(authData);
         assertTrue(authData.getAuthToken().length() > 10);
     }
 
-    @Test //fail
-    void registerDuplicateUser() {
+    @Test //fail (diplicate user)
+    void registerFail() {
         assertThrows(Exception.class, () -> {
             UserData request = new UserData("player1", "yourmom", "p1@email.com");
             facade.register(request);
@@ -59,19 +64,19 @@ public class ServerFacadeTests {
     }
 
     @Test //pass
-    void login() throws Exception {
+    void loginPass() throws Exception {
         UserData registerRequest = new UserData("player2", "yourmom", "p2@email.com");
         facade.register(registerRequest);
 
         UserData loginRequest = new UserData("player2", "yourmom", null);
         AuthData response = facade.login(loginRequest);
-        System.out.println("Login Test - AuthData: " + response);
+        //System.out.println("Login Test - AuthData: " + response);
         assertNotNull(response.getAuthToken());
         assertTrue(response.getAuthToken().length() > 10);
     }
 
-    @Test //fail
-    void loginWithInvalidCredentials() {
+    @Test //fail (WithInvalidCredentials)
+    void loginFail() {
         assertThrows(Exception.class, () -> {
             UserData loginRequest = new UserData("CheaterLemonEater", "1234", null);
             facade.login(loginRequest);
@@ -79,7 +84,7 @@ public class ServerFacadeTests {
     }
 
     @Test //pass
-    void createGame() throws Exception {
+    void createGamePass() throws Exception {
         UserData registerRequest = new UserData("player3", "yourmom", "p3@email.com");
         facade.register(registerRequest);
 
@@ -89,12 +94,12 @@ public class ServerFacadeTests {
 
         CreateGameRequest gameData = new CreateGameRequest("game1");
         GameData response = facade.createGame(gameData);
-        System.out.println("Create Game Test - GameData: " + response);
+        //System.out.println("Create Game Test - GameData: " + response);
         assertNotNull(response);
     }
 
-    @Test //fail
-    void createGameWithoutLogin() {
+    @Test //fail (WithoutLogin)
+    void createGameFail() {
         assertThrows(Exception.class, () -> {
             CreateGameRequest gameData = new CreateGameRequest("gameWithoutLogin");
             facade.createGame(gameData);
@@ -102,7 +107,7 @@ public class ServerFacadeTests {
     }
 
     @Test //pass
-    void listGames() throws Exception {
+    void listGamesPass() throws Exception {
         UserData registerRequest = new UserData("player4", "yourmom", "p4@email.com");
         facade.register(registerRequest);
 
@@ -117,21 +122,22 @@ public class ServerFacadeTests {
         facade.createGame(gameData2);
 
         List<GameData> response = facade.listGames();
-        System.out.println("List Games Test - GameData Array: " + response);
+        //System.out.println("List Games Test - GameData Array: " + response);
         assertNotNull(response);
         assertFalse(response.isEmpty());
     }
 
-    @Test //fail
-    void listGamesWithoutLogin() {
+    @Test //fail (WithoutLogin)
+    void listGamesFail() {
+        //Not logged in...
         assertThrows(Exception.class, () -> {
-            facade.setAuthData(null);
+            //facade.setAuthData(null);
             facade.listGames();
         });
     }
 
     @Test //pass
-    void joinGame() throws Exception {
+    void joinGamePass() throws Exception {
         UserData registerRequest = new UserData("player5", "yourmom", "p5@email.com");
         facade.register(registerRequest);
 
@@ -149,13 +155,40 @@ public class ServerFacadeTests {
         assertTrue(games.stream().anyMatch(game -> game.getGameID() == createdGame.getGameID() && "player5".equals(game.getWhiteUsername())));
     }
 
-    @Test //fail
-    void joinGameWithoutLogin() {
+    @Test //fail (WithoutLogin)
+    void joinGameFail() {
         assertThrows(Exception.class, () -> {
             JoinGameRequest joinRequest = new JoinGameRequest(69, "WHITE");
-                //69 is non existent game... results in failure
+            //69 is non existent game... results in failure
             facade.joinGame(joinRequest);
         });
     }
 
+    @Test
+    void testBoardPrinter() {
+        ChessBoard board = new ChessBoard();
+        board.resetBoard();
+        BoardPrinter boardPrinter = new BoardPrinter();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(outputStream);
+        PrintStream originalOut = System.out;
+
+        System.setOut(printStream);
+
+        // Print for WHITE
+        boardPrinter.printBoard(board);
+        // Print for BLAC
+        boardPrinter.printBoardReversed(board);
+
+        System.out.flush();
+        System.setOut(originalOut);
+
+        String boardOutput = outputStream.toString();
+        assertNotNull(boardOutput);
+        assertFalse(boardOutput.isEmpty());
+
+        System.out.println("Board Printer Test Output:");
+        System.out.println(boardOutput);
+    }
 }

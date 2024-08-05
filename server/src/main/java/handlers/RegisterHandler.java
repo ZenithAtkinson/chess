@@ -23,16 +23,16 @@ public class RegisterHandler implements Route {
 
     @Override
     public Object handle(Request req, Response res) {
-        LOGGER.info("Received registration request");
+        //LOGGER.info("Received registration request");
         RegisterRequest request = gson.fromJson(req.body(), RegisterRequest.class);
         RegisterResult result;
         try {
-            LOGGER.info("Processing registration for user: " + request.getUsername());
+            //LOGGER.info("Processing registration for user: " + request.getUsername());
             result = registerService.register(request);
             res.status(200); // Success
-            LOGGER.info("User registered successfully: " + request.getUsername());
+            //LOGGER.info("User registered successfully: " + request.getUsername());
         } catch (DataAccessException e) {
-            LOGGER.log(Level.SEVERE, "DataAccessException during registration: " + e.getMessage(), e);
+            //LOGGER.log(Level.SEVERE, "DataAccessException during registration: " + e.getMessage(), e);
             if (e.getMessage().contains("Missing required fields")) {
                 res.status(400); // Bad Request
             } else if (e.getMessage().contains("User already exists")) {
@@ -42,11 +42,11 @@ public class RegisterHandler implements Route {
             }
             result = new RegisterResult(e.getMessage());
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Exception during registration: " + e.getMessage(), e);
+            //LOGGER.log(Level.SEVERE, "Exception during registration: " + e.getMessage(), e);
             res.status(500); // Internal Server Error
             result = new RegisterResult("Internal Server Error: " + e.getMessage());
         }
-        LOGGER.info("Registration response: " + gson.toJson(result));
+        //LOGGER.info("Registration response: " + gson.toJson(result));
         return gson.toJson(result);
     }
 }

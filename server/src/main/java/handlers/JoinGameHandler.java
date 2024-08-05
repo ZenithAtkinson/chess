@@ -23,7 +23,7 @@ public class JoinGameHandler implements Route {
 
     @Override
     public Object handle(Request req, Response res) {
-        // Parse the join game request from the request body
+        //Parse the join game request from the request body
         JoinGameRequest request = gson.fromJson(req.body(), JoinGameRequest.class);
         // Get the authorization token from the request headers
         String authToken = req.headers("Authorization");
@@ -40,9 +40,9 @@ public class JoinGameHandler implements Route {
             res.status(200);
             return gson.toJson(new ResponseMessage("Game joined successfully"));
         } catch (DataAccessException e) {
-            LOGGER.error("Error during join game: {}", e.getMessage());
+            //LOGGER.error("Error during join game: {}", e.getMessage());
             String errorMessage = e.getMessage();
-            LOGGER.error("Response error message: {}", errorMessage);
+            //LOGGER.error("Response error message: {}", errorMessage);
             switch (errorMessage) {
                 case "Unauthorized":
                     res.status(401);
@@ -63,7 +63,7 @@ public class JoinGameHandler implements Route {
             }
             String responseBody = gson.toJson(new ResponseMessage("error: " + errorMessage));
             res.body(responseBody);
-            LOGGER.debug("Returning error response with message: {}", responseBody);
+            //LOGGER.debug("Returning error response with message: {}", responseBody);
             return res.body();
         }
     }

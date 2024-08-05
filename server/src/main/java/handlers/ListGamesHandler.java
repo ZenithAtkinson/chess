@@ -34,9 +34,9 @@ public class ListGamesHandler implements Route {
             return gson.toJson(result); //JSON object
         } catch (DataAccessException e) {
             //start logging error messages
-            LOGGER.error("Error during list games: {}", e.getMessage());
+            //LOGGER.error("Error during list games: {}", e.getMessage());
             String errorMessage = e.getMessage().toLowerCase();
-            LOGGER.error("Response error message: {}", errorMessage);
+            //LOGGER.error("Response error message: {}", errorMessage);
             if (errorMessage.contains("unauthorized")) {
                 res.status(401);
             } else if (errorMessage.contains("game not found")) {
@@ -52,7 +52,7 @@ public class ListGamesHandler implements Route {
             }
             String responseBody = gson.toJson(new ResponseMessage("error: " + errorMessage));
             res.body(responseBody);
-            LOGGER.debug("Returning error response with message: {}", responseBody);
+            //LOGGER.debug("Returning error response with message: {}", responseBody);
             return res.body();
         }
     }

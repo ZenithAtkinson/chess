@@ -21,7 +21,7 @@ public class CreateGameHandler implements Route {
 
     @Override
     public Object handle(Request req, Response res) throws Exception {
-        System.out.println("CreateGameHandler: Received create game request.");
+        //System.out.println("CreateGameHandler: Received create game request.");
         CreateGameRequest request = gson.fromJson(req.body(), CreateGameRequest.class);
         String authToken = req.headers("Authorization");
 

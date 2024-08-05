@@ -22,13 +22,13 @@ public class ListGamesService {
     }
 
     public ListGamesResult listGames(String authToken) throws DataAccessException {
-        System.out.println("listGames - Auth Token Received: " + authToken);
+        //System.out.println("listGames - Auth Token Received: " + authToken);
         AuthData authData = authDAO.getAuthData(authToken);
-        System.out.println("listGames - Auth Data Retrieved: " + authData);
+        //System.out.println("listGames - Auth Data Retrieved: " + authData);
         if (authData != null) {
             Collection<GameData> gamesCollection = gameDAO.getAllGames();
             List<GameData> gamesList = new ArrayList<>(gamesCollection); //List<GameData> from Collection?
-            System.out.println("listGames - Games Retrieved: " + gamesList);
+            //System.out.println("listGames - Games Retrieved: " + gamesList);
             return new ListGamesResult(gamesList);
         } else {
             throw new DataAccessException("Error: unauthorized");

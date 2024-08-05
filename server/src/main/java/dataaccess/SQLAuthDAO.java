@@ -19,7 +19,7 @@ public class SQLAuthDAO implements AuthDAO {
         try {
             configureDatabase();
         } catch (DataAccessException e) {
-            LOGGER.error("Error configuring database: {}", e.getMessage());
+            //LOGGER.error("Error configuring database: {}", e.getMessage());
         }
     }
 
@@ -31,7 +31,7 @@ public class SQLAuthDAO implements AuthDAO {
                     "username VARCHAR(255) NOT NULL)";
             stmt.executeUpdate(createTableSQL);
         } catch (SQLException e) {
-            LOGGER.error("Error configuring database: {}", e.getMessage());
+            //LOGGER.error("Error configuring database: {}", e.getMessage());
             throw new DataAccessException("Error encountered while configuring the database");
         }
     }
@@ -55,13 +55,13 @@ public class SQLAuthDAO implements AuthDAO {
                             rs.getString("authToken"),
                             rs.getString("username")
                     );
-                    LOGGER.info("Retrieved Auth Data from DB: {}", authData);
+                    //LOGGER.info("Retrieved Auth Data from DB: {}", authData);
                 } else {
-                    LOGGER.warn("No Auth Data found for token: {}", authToken);
+                    //LOGGER.warn("No Auth Data found for token: {}", authToken);
                 }
             }
         } catch (SQLException e) {
-            LOGGER.error("Error finding auth token {}: {}", authToken, e.getMessage());
+            //LOGGER.error("Error finding auth token {}: {}", authToken, e.getMessage());
             throw new DataAccessException("Error encountered while finding auth token");
         }
 
@@ -78,7 +78,7 @@ public class SQLAuthDAO implements AuthDAO {
             stmt.setString(2, authData.getUsername());
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
-                LOGGER.info("Successfully added Auth Data: {}", authData);
+                //LOGGER.info("Successfully added Auth Data: {}", authData);
             }
             return affectedRows > 0;
         } catch (SQLException e) {
@@ -103,10 +103,10 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new DataAccessException("Deleting auth data failed, no rows affected.");
             }
 
-            LOGGER.debug("Deleted auth data with token {}: {} rows affected", authToken, affectedRows);
+            //LOGGER.debug("Deleted auth data with token {}: {} rows affected", authToken, affectedRows);
             return true;
         } catch (SQLException e) {
-            LOGGER.error("Error deleting auth data with token {}: {}", authToken, e.getMessage());
+            //LOGGER.error("Error deleting auth data with token {}: {}", authToken, e.getMessage());
             throw new DataAccessException("Error encountered while deleting auth data from the database");
         }
     }
@@ -117,9 +117,9 @@ public class SQLAuthDAO implements AuthDAO {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.executeUpdate();
-            LOGGER.debug("Cleared all auth data");
+            //LOGGER.debug("Cleared all auth data");
         } catch (SQLException e) {
-            LOGGER.error("Error clearing auth data: {}", e.getMessage());
+            //LOGGER.error("Error clearing auth data: {}", e.getMessage());
             throw new DataAccessException("Error encountered while clearing auth data from the database");
         }
     }
@@ -138,9 +138,9 @@ public class SQLAuthDAO implements AuthDAO {
                 );
                 authDataList.add(authData);
             }
-            LOGGER.debug("Retrieved all auth data: {}", authDataList.size());
+            //LOGGER.debug("Retrieved all auth data: {}", authDataList.size());
         } catch (SQLException e) {
-            LOGGER.error("Error getting all auth data: {}", e.getMessage());
+            //LOGGER.error("Error getting all auth data: {}", e.getMessage());
             throw new DataAccessException("Error encountered while getting all auth data from the database");
         }
         return authDataList;
@@ -151,7 +151,7 @@ public class SQLAuthDAO implements AuthDAO {
         String authToken = UUID.randomUUID().toString();
         AuthData authData = new AuthData(authToken, username);
         addAuthData(authData);
-        LOGGER.debug("Generated auth token for username {}: {}", username, authToken);
+        //LOGGER.debug("Generated auth token for username {}: {}", username, authToken);
         return authToken;
     }
 }
