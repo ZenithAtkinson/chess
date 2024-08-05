@@ -90,6 +90,7 @@ public class PostLoginUI {
                 System.out.println("Available games:");
                 for (int i = 0; i < games.size(); i++) {
                     GameData game = games.get(i);
+                    // Double check formatting(?)
                     System.out.printf("%d. %s (White: %s, Black: %s)%n", i + 1, game.getGameName(), game.getWhiteUsername(), game.getBlackUsername());
                 }
             }
@@ -118,7 +119,7 @@ public class PostLoginUI {
             serverFacade.joinGame(joinRequest);
             System.out.println("Joined game successfully!");
 
-            // Print the chessboard
+            //Print the chessboard
             ChessBoard board = new ChessBoard();
             board.resetBoard();
             System.out.println("Chessboard from White's perspective:");
@@ -144,10 +145,10 @@ public class PostLoginUI {
             }
 
             GameData game = games.get(gameNumber - 1);
-            // Implement observe game logic if needed
+            //Implement observe game logic if needed
             System.out.println("Observing game: " + game.getGameName());
 
-            // Print the chessboard
+            //Print the chessboard
             ChessBoard board = new ChessBoard();
             board.resetBoard();
             System.out.println("Chessboard from White's perspective:");

@@ -32,7 +32,7 @@ public class ServerFacadeTests {
         server.stop();
     }
 
-    @BeforeEach
+    @BeforeEach // The database needs to be constantly reset to avoid any strange and unexpected errors in the "pass" tests.
     public void clearDatabase() {
         try {
             facade.clearDatabase();
@@ -41,50 +41,50 @@ public class ServerFacadeTests {
         }
     }
 
-    @Test
+    @Test //pass
     void register() throws Exception {
-        UserData request = new UserData("player1", "password", "p1@email.com");
+        UserData request = new UserData("player1", "yourmom", "p1@email.com");
         AuthData authData = facade.register(request);
         System.out.println("Register Test - AuthData: " + authData);
         assertNotNull(authData);
         assertTrue(authData.getAuthToken().length() > 10);
     }
 
-    @Test
+    @Test //fail
     void registerDuplicateUser() {
         assertThrows(Exception.class, () -> {
-            UserData request = new UserData("player1", "password", "p1@email.com");
+            UserData request = new UserData("player1", "yourmom", "p1@email.com");
             facade.register(request);
             facade.register(request);
         });
     }
 
-    @Test
+    @Test //pass
     void login() throws Exception {
-        UserData registerRequest = new UserData("player2", "password", "p2@email.com");
+        UserData registerRequest = new UserData("player2", "yourmom", "p2@email.com");
         facade.register(registerRequest);
 
-        UserData loginRequest = new UserData("player2", "password", null);
+        UserData loginRequest = new UserData("player2", "yourmom", null);
         AuthData response = facade.login(loginRequest);
         System.out.println("Login Test - AuthData: " + response);
         assertNotNull(response.getAuthToken());
         assertTrue(response.getAuthToken().length() > 10);
     }
 
-    @Test
+    @Test //fail
     void loginWithInvalidCredentials() {
         assertThrows(Exception.class, () -> {
-            UserData loginRequest = new UserData("invalidUser", "invalidPassword", null);
+            UserData loginRequest = new UserData("CheaterLemonEater", "1234", null);
             facade.login(loginRequest);
         });
     }
 
-    @Test
+    @Test //pass
     void createGame() throws Exception {
-        UserData registerRequest = new UserData("player3", "password", "p3@email.com");
+        UserData registerRequest = new UserData("player3", "yourmom", "p3@email.com");
         facade.register(registerRequest);
 
-        UserData loginRequest = new UserData("player3", "password", null);
+        UserData loginRequest = new UserData("player3", "yourmom", null);
         AuthData authData = facade.login(loginRequest);
         facade.setAuthData(authData);
 
@@ -94,7 +94,7 @@ public class ServerFacadeTests {
         assertNotNull(response);
     }
 
-    @Test
+    @Test //fail
     void createGameWithoutLogin() {
         assertThrows(Exception.class, () -> {
             CreateGameRequest gameData = new CreateGameRequest("gameWithoutLogin");
@@ -102,12 +102,12 @@ public class ServerFacadeTests {
         });
     }
 
-    @Test
+    @Test //pass
     void listGames() throws Exception {
-        UserData registerRequest = new UserData("player4", "password", "p4@email.com");
+        UserData registerRequest = new UserData("player4", "yourmom", "p4@email.com");
         facade.register(registerRequest);
 
-        UserData loginRequest = new UserData("player4", "password", null);
+        UserData loginRequest = new UserData("player4", "yourmom", null);
         AuthData authData = facade.login(loginRequest);
         facade.setAuthData(authData);
 
@@ -123,7 +123,7 @@ public class ServerFacadeTests {
         assertFalse(response.isEmpty());
     }
 
-    @Test
+    @Test //fail
     void listGamesWithoutLogin() {
         assertThrows(Exception.class, () -> {
             facade.setAuthData(null);
@@ -131,12 +131,12 @@ public class ServerFacadeTests {
         });
     }
 
-    @Test
+    @Test //pass
     void joinGame() throws Exception {
-        UserData registerRequest = new UserData("player5", "password", "p5@email.com");
+        UserData registerRequest = new UserData("player5", "yourmom", "p5@email.com");
         facade.register(registerRequest);
 
-        UserData loginRequest = new UserData("player5", "password", null);
+        UserData loginRequest = new UserData("player5", "yourmom", null);
         AuthData authData = facade.login(loginRequest);
         facade.setAuthData(authData);
 
@@ -150,10 +150,11 @@ public class ServerFacadeTests {
         assertTrue(games.stream().anyMatch(game -> game.getGameID() == createdGame.getGameID() && "player5".equals(game.getWhiteUsername())));
     }
 
-    @Test
+    @Test //fail
     void joinGameWithoutLogin() {
         assertThrows(Exception.class, () -> {
             JoinGameRequest joinRequest = new JoinGameRequest(999, "WHITE");
+                //999 is non existent game... results in failure
             facade.joinGame(joinRequest);
         });
     }

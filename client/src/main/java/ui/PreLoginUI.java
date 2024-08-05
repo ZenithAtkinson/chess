@@ -6,6 +6,8 @@ import ServerUtils.ServerFacade;
 import model.UserData;
 import model.AuthData;
 
+import static ui.EscapeSequences.*;
+
 public class PreLoginUI {
     private final ServerFacade serverFacade;
 
@@ -15,8 +17,9 @@ public class PreLoginUI {
 
     public void display() {
         Scanner scanner = new Scanner(System.in);
+        System.out.println("Welcome to Chess 240. Type, " + SET_TEXT_BOLD  + SET_TEXT_UNDERLINE + "\"Help\""+RESET_TEXT_UNDERLINE + RESET_TEXT_BOLD_FAINT+", to get started.");
         while (true) {
-            System.out.println("Pre-Login Commands: Help, Quit, Login, Register");
+            //System.out.println("Pre-Login Commands: Help, Quit, Login, Register");
             String command = scanner.nextLine().trim().toLowerCase();
             switch (command) {
                 case "help":

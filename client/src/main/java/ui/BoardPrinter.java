@@ -45,6 +45,7 @@ public class BoardPrinter {
         System.out.println("a b c d e f g h");
     }
 
+    //Reverse board for the other player (black)
     public void printBoardReversed(ChessBoard board) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
@@ -63,6 +64,7 @@ public class BoardPrinter {
         System.out.println("h g f e d c b a");
     }
 
+    // Tester board print with set pieces on board to test if any given board will be properly printed
     public static class BoardPrinterTest {
 
         public static void main(String[] args) {

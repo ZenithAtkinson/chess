@@ -27,6 +27,7 @@ public class ServerFacade {
         this.authData = authData;
     }
 
+    //Double check AuthData values
     public AuthData register(UserData request) throws ResponseException {
         var path = "/user";
         System.out.println("Sending register request: " + gson.toJson(request));
@@ -37,7 +38,7 @@ public class ServerFacade {
         System.out.println("Received register response: " + gson.toJson(out));
         return out;
     }
-
+    // Double check AuthData values
     public AuthData login(UserData request) throws ResponseException {
         var path = "/session";
         System.out.println("Sending login request: " + gson.toJson(request));
@@ -48,12 +49,12 @@ public class ServerFacade {
         System.out.println("Received login response: " + gson.toJson(out));
         return out;
     }
-
+    // Removes everything, very useful in tests
     public void clearDatabase() throws ResponseException {
         var path = "/db";
         this.makeRequest("DELETE", path, null, Void.class);
     }
-
+    //Create a game with request
     public GameData createGame(CreateGameRequest request) throws ResponseException {
         var path = "/game";
         System.out.println("Sending create game request: " + gson.toJson(request));
@@ -61,14 +62,14 @@ public class ServerFacade {
         System.out.println("Received create game response: " + gson.toJson(out));
         return out;
     }
-
+    //List games, doesnt use request.
     public List<GameData> listGames() throws ResponseException {
         var path = "/game";
         ListGamesResult response = this.makeRequest("GET", path, null, ListGamesResult.class);
         System.out.println("Received list games response: " + gson.toJson(response));
         return response.games();  // .games() method of record to retrieve the list
     }
-
+    //Uses JoinGameRequest to join
     public void joinGame(JoinGameRequest request) throws ResponseException {
         var path = "/game";
         this.makeRequest("PUT", path, request, null);
@@ -91,11 +92,11 @@ public class ServerFacade {
             http.connect();
             throwIfNotSuccessful(http);
 
-            // Read the response body
+            //Read response body
             String responseBody = readResponseBody(http);
             System.out.println("Received response body: " + responseBody);
 
-            // Deserialize the response body
+            //Deserialize  response body
             if (responseClass != null) {
                 T response = gson.fromJson(responseBody, responseClass);
                 System.out.println("Deserialized response: " + gson.toJson(response));
@@ -119,6 +120,7 @@ public class ServerFacade {
         }
     }
 
+    //Error catcher
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
@@ -149,6 +151,7 @@ public class ServerFacade {
         return responseBody.toString();
     }
 
+    //PetShop method of finding error codes
     private boolean isSuccessful(int status) {
         return status / 100 == 2;
     }
