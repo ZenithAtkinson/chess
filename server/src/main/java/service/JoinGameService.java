@@ -39,7 +39,7 @@ public class JoinGameService {
         String playerColor = request.getPlayerColor();
         if (playerColor == null || (!playerColor.equals("WHITE") && !playerColor.equals("BLACK"))) {
             LOGGER.error("Invalid player color: {}", playerColor);
-            throw new DataAccessException("Invalid player color"); // Throw exception if player color is invalid
+            throw new DataAccessException("Invalid player color");
         }
 
         // Check if the player color is already taken
@@ -49,10 +49,10 @@ public class JoinGameService {
             throw new DataAccessException("Player color already taken"); // Throw exception if player color is already taken
         }
 
-        // Set the username for color
+        //Set the username for color
         if ("WHITE".equals(playerColor)) {
             gameData.setWhiteUsername(authData.getUsername());
-        } else if ("BLACK".equals(playerColor)) {
+        } else if ("BLACK".equals(playerColor)) { //check this
             gameData.setBlackUsername(authData.getUsername());
         }
 
@@ -61,3 +61,4 @@ public class JoinGameService {
         LOGGER.debug("Successfully joined game with ID: {}", request.getGameID());
     }
 }
+

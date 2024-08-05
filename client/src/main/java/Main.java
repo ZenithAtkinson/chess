@@ -1,3 +1,5 @@
+import ui.BoardPrinter;
+import chess.ChessBoard;
 import server.Server;
 import ServerUtils.ServerFacade;
 import ui.PreLoginUI;
@@ -15,5 +17,6 @@ public class Main {
         // Initialize and display the PreLoginUI
         PreLoginUI preLoginUI = new PreLoginUI(serverFacade);
         preLoginUI.display();
+
     }
 }

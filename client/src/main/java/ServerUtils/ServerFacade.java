@@ -3,11 +3,15 @@ package ServerUtils;
 import com.google.gson.Gson;
 import java.io.*;
 import java.net.*;
+import java.util.List;
+
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 import request.CreateGameRequest;
+import request.JoinGameRequest;
 import response.CreateGameResult;
+import response.ListGamesResult;
 
 public class ServerFacade {
 
@@ -58,15 +62,14 @@ public class ServerFacade {
         return out;
     }
 
-    public GameData[] listGames() throws ResponseException {
+    public List<GameData> listGames() throws ResponseException {
         var path = "/game";
-        System.out.println("Sending list games request with auth token: " + (authData != null ? authData.getAuthToken() : "No Auth Token"));
-        GameData[] out = this.makeRequest("GET", path, null, GameData[].class);
-        System.out.println("Received list games response: " + gson.toJson(out));
-        return out;
+        ListGamesResult response = this.makeRequest("GET", path, null, ListGamesResult.class);
+        System.out.println("Received list games response: " + gson.toJson(response));
+        return response.games();  // .games() method of record to retrieve the list
     }
 
-    public void joinGame(GameData request) throws ResponseException {
+    public void joinGame(JoinGameRequest request) throws ResponseException {
         var path = "/game";
         this.makeRequest("PUT", path, request, null);
     }
@@ -93,14 +96,18 @@ public class ServerFacade {
             System.out.println("Received response body: " + responseBody);
 
             // Deserialize the response body
-            T response = gson.fromJson(responseBody, responseClass);
-            System.out.println("Deserialized response: " + gson.toJson(response));
-
-            return response;
+            if (responseClass != null) {
+                T response = gson.fromJson(responseBody, responseClass);
+                System.out.println("Deserialized response: " + gson.toJson(response));
+                return response;
+            }
+            return null;
         } catch (Exception ex) {
-            throw new ResponseException(500, ex.getMessage());
+            throw new ResponseException(500, "make request error:" + ex.getMessage());
         }
     }
+
+
 
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {

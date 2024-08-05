@@ -23,13 +23,17 @@ public class JoinGameHandler implements Route {
 
     @Override
     public Object handle(Request req, Response res) {
-        //Parse the join game request from the request body
+        // Parse the join game request from the request body
         JoinGameRequest request = gson.fromJson(req.body(), JoinGameRequest.class);
-        //Get the authorization token from the request headers
+        // Get the authorization token from the request headers
         String authToken = req.headers("Authorization");
 
+        if (authToken != null && authToken.startsWith("Bearer ")) {
+            authToken = authToken.substring(7); // Remove the "Bearer " prefix
+        }
+
         try {
-            //LOG ALL THE ERRORS, for the test cases that don't work
+            // LOG ALL THE ERRORS, for the test cases that don't work
             LOGGER.debug("Handling join game request: {}", request);
             // Call the service to join the game
             joinGameService.joinGame(request, authToken);

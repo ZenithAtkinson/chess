@@ -1,19 +1,25 @@
 package ui;
 
+import java.util.List;
 import java.util.Scanner;
 
 import ServerUtils.ServerFacade;
+import ui.BoardPrinter;
+import chess.ChessBoard;
 import model.AuthData;
 import model.GameData;
 import request.CreateGameRequest;
+import request.JoinGameRequest;
 
 public class PostLoginUI {
     private final ServerFacade serverFacade;
     private final AuthData authData;
+    private final BoardPrinter boardPrinter;
 
     public PostLoginUI(ServerFacade serverFacade, AuthData authData) {
         this.serverFacade = serverFacade;
         this.authData = authData;
+        this.boardPrinter = new BoardPrinter();
     }
 
     public void display() {
@@ -59,7 +65,6 @@ public class PostLoginUI {
 
     private void logout() {
         System.out.println("Logging out...");
-        // Implement the logout logic if needed
         new PreLoginUI(serverFacade).display();
     }
 
@@ -78,13 +83,13 @@ public class PostLoginUI {
 
     private void listGames() {
         try {
-            GameData[] games = serverFacade.listGames();
-            if (games.length == 0) {
+            List<GameData> games = serverFacade.listGames();
+            if (games.isEmpty()) {
                 System.out.println("No games available.");
             } else {
                 System.out.println("Available games:");
-                for (int i = 0; i < games.length; i++) {
-                    GameData game = games[i];
+                for (int i = 0; i < games.size(); i++) {
+                    GameData game = games.get(i);
                     System.out.printf("%d. %s (White: %s, Black: %s)%n", i + 1, game.getGameName(), game.getWhiteUsername(), game.getBlackUsername());
                 }
             }
@@ -102,16 +107,25 @@ public class PostLoginUI {
         String color = scanner.nextLine().trim().toUpperCase();
 
         try {
-            GameData[] games = serverFacade.listGames();
-            if (gameNumber < 1 || gameNumber > games.length) {
+            List<GameData> games = serverFacade.listGames();
+            if (gameNumber < 1 || gameNumber > games.size()) {
                 System.out.println("Invalid game number.");
                 return;
             }
 
-            GameData game = games[gameNumber - 1];
-            GameData joinRequest = new GameData(game.getGameID(), color.equals("WHITE") ? authData.getUsername() : game.getWhiteUsername(), color.equals("BLACK") ? authData.getUsername() : game.getBlackUsername(), game.getGameName(), null, color);
+            GameData game = games.get(gameNumber - 1);
+            JoinGameRequest joinRequest = new JoinGameRequest(game.getGameID(), color);
             serverFacade.joinGame(joinRequest);
             System.out.println("Joined game successfully!");
+
+            // Print the chessboard
+            ChessBoard board = new ChessBoard();
+            board.resetBoard();
+            System.out.println("Chessboard from White's perspective:");
+            boardPrinter.printBoard(board);
+            System.out.println("Chessboard from Black's perspective:");
+            boardPrinter.printBoardReversed(board);
+
         } catch (Exception e) {
             System.out.println("Failed to join game: " + e.getMessage());
         }
@@ -123,15 +137,24 @@ public class PostLoginUI {
         int gameNumber = Integer.parseInt(scanner.nextLine().trim());
 
         try {
-            GameData[] games = serverFacade.listGames();
-            if (gameNumber < 1 || gameNumber > games.length) {
+            List<GameData> games = serverFacade.listGames();
+            if (gameNumber < 1 || gameNumber > games.size()) {
                 System.out.println("Invalid game number.");
                 return;
             }
 
-            GameData game = games[gameNumber - 1];
+            GameData game = games.get(gameNumber - 1);
             // Implement observe game logic if needed
             System.out.println("Observing game: " + game.getGameName());
+
+            // Print the chessboard
+            ChessBoard board = new ChessBoard();
+            board.resetBoard();
+            System.out.println("Chessboard from White's perspective:");
+            boardPrinter.printBoard(board);
+            System.out.println("Chessboard from Black's perspective:");
+            boardPrinter.printBoardReversed(board);
+
         } catch (Exception e) {
             System.out.println("Failed to observe game: " + e.getMessage());
         }
