@@ -8,6 +8,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you should not alter the existing
  * methods.
  */
+//Needs to implement 3 main server messages: Load game, error, and notificatoin (see specs for details)
 public class ServerMessage {
     ServerMessageType serverMessageType;
 
@@ -42,3 +43,6 @@ public class ServerMessage {
         return Objects.hash(getServerMessageType());
     }
 }
+
+
+
