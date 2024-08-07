@@ -7,46 +7,35 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import websocket.WebSocketSessions;
-import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
+import websocket.commands.UserGameCommand;
 
 import java.io.IOException;
 
 @WebSocket
 public class WebSocketHandler {
-    private final WebSocketSessions webSocketSessions = new WebSocketSessions();
-    private final Gson gson = new Gson();
+    private final WebSocketSessions sessions = new WebSocketSessions();
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        System.out.println("New connection: " + session.getRemoteAddress().getAddress());
-        // Optionally handle new connection setup here
+        // Handle new connection ( if needed )
     }
 
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
-        System.out.println("Connection closed: " + session.getRemoteAddress().getAddress());
-        webSocketSessions.removeSession(session);
+        // Handle closing connection ( if needed )
     }
 
     @OnWebSocketError
     public void onError(Session session, Throwable throwable) {
-        System.err.println("Error on connection: " + session.getRemoteAddress().getAddress());
-        throwable.printStackTrace();
+        // Handle error ( if needed )
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) {
+    public void onMessage(Session session, String message) throws IOException {
+        Gson gson = new Gson();
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
-        try {
-            handleCommand(session, command);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    private void handleCommand(Session session, UserGameCommand command) throws IOException {
         switch (command.getCommandType()) {
             case CONNECT:
                 connect(session, command);
@@ -55,40 +44,38 @@ public class WebSocketHandler {
                 makeMove(session, command);
                 break;
             case LEAVE:
-                leave(session, command);
+                leaveGame(session, command);
                 break;
             case RESIGN:
-                resign(session, command);
+                resignGame(session, command);
+                break;
+            default:
+                sessions.sendMessage(session, new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Invalid command type"));
                 break;
         }
     }
 
     private void connect(Session session, UserGameCommand command) throws IOException {
-        // Handle the CONNECT command logic
-        webSocketSessions.addSession(command.getGameID(), session);
-        // Send LOAD_GAME message to the root client
-        ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
-        webSocketSessions.sendMessage(session, gson.toJson(loadGameMessage));
-        // Notify other clients
-        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-        webSocketSessions.broadcast(gson.toJson(notification), command.getGameID(), session);
+        // connect logic
+        sessions.addSessionToGame(command.getGameID(), session);
+        ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "Game loaded successfully");
+        sessions.sendMessage(session, message);
     }
 
     private void makeMove(Session session, UserGameCommand command) throws IOException {
-        // Handle the MAKE_MOVE command logic
-        // Update game state and send LOAD_GAME and NOTIFICATION messages
+        // make move logic
     }
 
-    private void leave(Session session, UserGameCommand command) throws IOException {
-        // Handle the LEAVE command logic
-        webSocketSessions.removeSession(command.getGameID(), session);
-        // Notify other clients
-        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-        webSocketSessions.broadcast(gson.toJson(notification), command.getGameID(), session);
+    private void leaveGame(Session session, UserGameCommand command) throws IOException {
+        // leave game logic
+        sessions.removeSessionFromGame(command.getGameID(), session);
+        ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player left the game");
+        sessions.broadcastMessage(command.getGameID(), message, session);
     }
 
-    private void resign(Session session, UserGameCommand command) throws IOException {
-        // Handle the RESIGN command logic
-        // Mark game as over and send NOTIFICATION messages
+    private void resignGame(Session session, UserGameCommand command) throws IOException {
+        // resign game logic
+        ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player resigned the game");
+        sessions.broadcastMessage(command.getGameID(), message, session);
     }
 }

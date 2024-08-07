@@ -1,56 +1,47 @@
 package websocket;
 
-import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.ServerMessage;
+import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WebSocketSessions {
-    private final Map<Integer, Set<Session>> sessions = new ConcurrentHashMap<>();
+    private final Map<Integer, Set<Session>> sessionMap = new ConcurrentHashMap<>();
 
-    public void addSession(int gameId, Session session) {
-        sessions.computeIfAbsent(gameId, k -> Collections.synchronizedSet(new HashSet<>())).add(session);
+    public void addSessionToGame(int gameID, Session session) {
+        sessionMap.computeIfAbsent(gameID, k -> Collections.synchronizedSet(new HashSet<>())).add(session);
     }
 
-    public void removeSession(Session session) {
-        for (Set<Session> sessionSet : sessions.values()) {
-            sessionSet.remove(session);
-        }
-    }
-
-    public void removeSession(int gameId, Session session) {
-        Set<Session> sessionSet = sessions.get(gameId);
-        if (sessionSet != null) {
-            sessionSet.remove(session);
-        }
-    }
-
-    public void broadcast(String message, int gameId, Session exclude) throws IOException {
-        Set<Session> sessionSet = sessions.get(gameId);
-        if (sessionSet != null) {
-            for (Session ses : sessionSet) {
-                if (ses != exclude) {
-                    sendMessage(ses, message);
-                }
+    public void removeSessionFromGame(int gameID, Session session) {
+        if (sessionMap.containsKey(gameID)) {
+            sessionMap.get(gameID).remove(session);
+            if (sessionMap.get(gameID).isEmpty()) {
+                sessionMap.remove(gameID);
             }
         }
     }
 
-    public void sendError(Session session, String message) throws IOException {
-        ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
-        sendMessage(session, new Gson().toJson(error));
+    public Set<Session> getSessionsForGame(int gameID) {
+        return sessionMap.getOrDefault(gameID, Collections.emptySet());
     }
 
-    public void sendMessage(Session session, String message) throws IOException {
+    public void sendMessage(Session session, ServerMessage message) throws IOException {
         if (session.isOpen()) {
-            session.getRemote().sendString(message);
+            session.getRemote().sendString(new Gson().toJson(message));
         }
     }
 
-    public void clear() {
-        sessions.clear();
+    public void broadcastMessage(int gameID, ServerMessage message, Session exceptThisSession) throws IOException {
+        for (Session session : getSessionsForGame(gameID)) {
+            if (session != exceptThisSession) {
+                sendMessage(session, message);
+            }
+        }
     }
 }
