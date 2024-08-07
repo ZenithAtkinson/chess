@@ -9,6 +9,7 @@ import model.AuthData;
 import model.GameData;
 import request.CreateGameRequest;
 import request.JoinGameRequest;
+import webclient.WSClient;
 
 public class PostLoginUI {
     private final ServerFacade serverFacade;
@@ -21,7 +22,6 @@ public class PostLoginUI {
         this.boardPrinter = new BoardPrinter();
     }
 
-    //REMEMBER: Escape sequences for flavor text.
     public void display() {
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -101,7 +101,6 @@ public class PostLoginUI {
                 System.out.println("Available games:");
                 for (int i = 0; i < games.size(); i++) {
                     GameData game = games.get(i);
-                    //Double check formatting(?)
                     System.out.printf("%d. %s (White: %s, Black: %s)%n", i + 1, game.getGameName(), game.getWhiteUsername(), game.getBlackUsername());
                 }
             }
@@ -135,13 +134,13 @@ public class PostLoginUI {
             serverFacade.joinGame(joinRequest);
             System.out.println("Joined game successfully!");
 
-            // Print chessboard
+            WSClient wsClient = new WSClient("localhost", 8080);
+            wsClient.connectAsPlayer(authData.getAuthToken(), game.getGameID());
+
             ChessBoard board = new ChessBoard();
             board.resetBoard();
-            System.out.println("Chessboard from White's perspective:");
-            boardPrinter.printBoard(board);
-            System.out.println("Chessboard from Black's perspective:");
-            boardPrinter.printBoardReversed(board);
+            GameplayUI gameplayUI = new GameplayUI(wsClient, board, false, color, authData.getAuthToken(), game.getGameID());
+            gameplayUI.display();
 
         } catch (NumberFormatException e) {
             System.out.println("Invalid game number. Please enter a valid number.");
@@ -163,16 +162,15 @@ public class PostLoginUI {
             }
 
             GameData game = games.get(gameNumber - 1);
-            //Additional observe game fields.?
             System.out.println("Observing game: " + game.getGameName());
 
-            //Print  chessboard
+            WSClient wsClient = new WSClient("localhost", 8080);
+            wsClient.connectAsObserver(authData.getAuthToken(), game.getGameID());
+
             ChessBoard board = new ChessBoard();
             board.resetBoard();
-            System.out.println("Chessboard from White's perspective:");
-            boardPrinter.printBoard(board);
-            System.out.println("Chessboard from Black's perspective:");
-            boardPrinter.printBoardReversed(board);
+            GameplayUI gameplayUI = new GameplayUI(wsClient, board, true, "", authData.getAuthToken(), game.getGameID());
+            gameplayUI.display();
 
         } catch (NumberFormatException e) {
             System.out.println("Invalid game number. Please enter a valid number.");

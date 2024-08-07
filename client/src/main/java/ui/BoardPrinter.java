@@ -1,10 +1,12 @@
 package ui;
 
 import chess.ChessBoard;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class BoardPrinter {
@@ -38,12 +40,17 @@ public class BoardPrinter {
         System.out.println();
     }
 
-    private void printCell(ChessBoard board, int row, int col) {
+    private void printCell(ChessBoard board, int row, int col, List<ChessPosition> highlightedPositions) {
         ChessPosition position = new ChessPosition(row, col);
         ChessPiece piece = board.getPiece(position);
         boolean isDarkSquare = (row + col) % 2 == 0;
+
+        boolean isHighlighted = highlightedPositions.contains(position);
+
         String backgroundColor;
-        if (isDarkSquare) {
+        if (isHighlighted) {
+            backgroundColor = EscapeSequences.SET_BG_COLOR_GREEN;
+        } else if (isDarkSquare) {
             backgroundColor = EscapeSequences.SET_BG_COLOR_DARK_GREY;
         } else {
             backgroundColor = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
@@ -60,23 +67,31 @@ public class BoardPrinter {
     }
 
     public void printBoard(ChessBoard board) {
+        printBoardWithHighlights(board, List.of());
+    }
+
+    public void printBoardReversed(ChessBoard board) {
+        printBoardReversedWithHighlights(board, List.of());
+    }
+
+    public void printBoardWithHighlights(ChessBoard board, List<ChessPosition> highlightedPositions) {
         printColumnLetters("abcdefgh");
         for (int row = 8; row >= 1; row--) {
             printRowNumbers(row);
             for (int col = 1; col <= 8; col++) {
-                printCell(board, row, col);
+                printCell(board, row, col, highlightedPositions);
             }
             System.out.println(" " + row);
         }
         printColumnLetters("abcdefgh");
     }
 
-    public void printBoardReversed(ChessBoard board) {
+    public void printBoardReversedWithHighlights(ChessBoard board, List<ChessPosition> highlightedPositions) {
         printColumnLetters("hgfedcba");
         for (int row = 1; row <= 8; row++) {
             printRowNumbers(row);
             for (int col = 8; col >= 1; col--) {
-                printCell(board, row, col);
+                printCell(board, row, col, highlightedPositions);
             }
             System.out.println(" " + row);
         }

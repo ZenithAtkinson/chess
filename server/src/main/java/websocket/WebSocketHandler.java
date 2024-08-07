@@ -18,17 +18,19 @@ public class WebSocketHandler {
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        // Handle new connection ( if needed )
+        System.out.println("Connected: " + session);
     }
 
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
-        // Handle closing connection ( if needed )
+        System.out.println("Closed: " + session + " with statusCode: " + statusCode + " and reason: " + reason);
+        // Handle session cleanup if necessary
     }
 
     @OnWebSocketError
     public void onError(Session session, Throwable throwable) {
-        // Handle error ( if needed )
+        System.err.println("Error: " + session + " with error: " + throwable.getMessage());
+        throwable.printStackTrace();
     }
 
     @OnWebSocketMessage
@@ -56,25 +58,23 @@ public class WebSocketHandler {
     }
 
     private void connect(Session session, UserGameCommand command) throws IOException {
-        // connect logic
         sessions.addSessionToGame(command.getGameID(), session);
         ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "Game loaded successfully");
         sessions.sendMessage(session, message);
     }
 
     private void makeMove(Session session, UserGameCommand command) throws IOException {
-        // make move logic
+        // Implement game move logic here
+        System.out.println("Move made: " + command);
     }
 
     private void leaveGame(Session session, UserGameCommand command) throws IOException {
-        // leave game logic
         sessions.removeSessionFromGame(command.getGameID(), session);
         ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player left the game");
         sessions.broadcastMessage(command.getGameID(), message, session);
     }
 
     private void resignGame(Session session, UserGameCommand command) throws IOException {
-        // resign game logic
         ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player resigned the game");
         sessions.broadcastMessage(command.getGameID(), message, session);
     }
