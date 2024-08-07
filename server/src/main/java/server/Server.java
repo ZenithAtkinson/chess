@@ -6,11 +6,12 @@ import handlers.*;
 
 import service.ClearService;
 import service.RegisterService;
+import websocket.WebSocketHandler;
 
 public class Server {
 
     public int run(int desiredPort) {
-        // Set the port
+        //Set port
         Spark.port(desiredPort);
 
         // Set the location for static files
@@ -24,6 +25,10 @@ public class Server {
         //Initialize services
         RegisterService registerService = new RegisterService(userDAO, authDAO);
 
+        // Register WebSocket handler
+        Spark.webSocket("/ws", WebSocketHandler.class); // Need to have dependencies passed in (DAO).
+        // 2nd argument needs to be an instance of the websocket handler
+
         //Register handlers (Should all be the same)
         Spark.post("/user", new RegisterHandler(registerService));
         Spark.post("/session", new LoginHandler(userDAO, authDAO));
@@ -33,14 +38,14 @@ public class Server {
         Spark.put("/game", new JoinGameHandler(gameDAO, authDAO));
         Spark.delete("/db", new ClearHandler(new ClearService(userDAO, gameDAO, authDAO)));
 
+
+
         /** * // Exception handling
         *     // Try without handling
         * Spark.exception(Exception.class, (exception, request, response) -> {
         *     response.status(500);
         *     response.body("{\"message\":\"Internal Server Error: " + exception.getMessage() + "\"}");
          */
-
-
 
         // Await initialization
         Spark.awaitInitialization();
