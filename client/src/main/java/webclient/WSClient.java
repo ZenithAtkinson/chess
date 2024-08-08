@@ -21,18 +21,18 @@ public class WSClient implements MessageHandler.Whole<String> {
         session = ContainerProvider.getWebSocketContainer().connectToServer(new Endpoint() {
             @Override
             public void onOpen(Session session, EndpointConfig endpointConfig) {
-                System.out.println("WebSocket connection opened.");
+                //System.out.println("WebSocket connection opened.");
             }
         }, uri);
 
         session.addMessageHandler(this);
 
-        System.out.println("WebSocket connection established.");
+        //System.out.println("WebSocket connection established.");
     }
 
     @Override
     public void onMessage(String message) {
-        System.out.println("Received: " + message); // MUST BE REMOVED ***********************
+        //System.out.println("Received: " + message); // MUST BE REMOVED ***********************
 
         try {
             ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
@@ -62,21 +62,23 @@ public class WSClient implements MessageHandler.Whole<String> {
 
     private void handleError(String errorMessage) {
         System.err.println("Error: " + errorMessage);
-        // Add logic to handle errors
+
+        //LOGIC FOR ERRORS
     }
 
     private void handleNotification(String message) {
-        System.out.println("Notification: " + message);
-        // Add logic to handle notifications
+        //System.out.println("Notification: " + message);
+
+        //LOGIC FOR NOTIFICATIONS NEEDS TO BE ADDED STILL
     }
 
     public void send(String msg) throws IOException {
-        System.out.println("Sending: " + msg); // MUST BE REMOVED *******************
+        //System.out.println("Sending: " + msg); // MUST BE REMOVED *******************
         session.getBasicRemote().sendText(msg);
     }
 
     public void close() throws IOException {
-        System.out.println("Closing WebSocket connection.");
+        //System.out.println("Closing WebSocket connection.");
         session.close();
     }
 
