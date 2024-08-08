@@ -85,9 +85,8 @@ public class WSClient implements MessageHandler.Whole<String> {
         send(gson.toJson(command));
     }
 
-    public void connectAsObserver(String authToken, int gameId, String username) throws IOException {
-        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId, null, username);
-        send(gson.toJson(command));
+    public void connectAsObserver(String authToken, int gameId, String username) throws IOException { // Does this need to be changed?
+        connectAsPlayer(authToken, gameId, username);
     }
 
     public void makeMove(String authToken, int gameId, ChessMove move, String username) throws IOException {

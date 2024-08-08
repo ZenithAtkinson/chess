@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 @WebSocket
 public class WebSocketHandler {
     private static final Logger LOGGER = Logger.getLogger(WebSocketHandler.class.getName());
-    private static final WebSocketSessions sessions = new WebSocketSessions();
+    private static final WebSocketSessions SESSIONS = new WebSocketSessions();
     private static GameDAO gameDAO;
     private static AuthDAO authDAO;
 
@@ -36,7 +36,7 @@ public class WebSocketHandler {
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
         LOGGER.info("WebSocket connection closed: " + session + ", Status: " + statusCode + ", Reason: " + reason);
-        sessions.removeSession(session);
+        SESSIONS.removeSession(session);
     }
 
     @OnWebSocketError
@@ -92,14 +92,14 @@ public class WebSocketHandler {
                 return;
             }
 
-            sessions.addSessionToGame(command.getGameID(), session);
+            SESSIONS.addSessionToGame(command.getGameID(), session);
             ServerMessage loadGameMessage = new ServerMessage(gameData.getChessGame());
             LOGGER.info("Sending LOAD_GAME message: " + loadGameMessage);
-            sessions.sendMessage(session, loadGameMessage);
+            SESSIONS.sendMessage(session, loadGameMessage);
 
             ServerMessage notifyMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                     "User " + authData.getUsername() + " connected");
-            sessions.broadcastMessage(command.getGameID(), notifyMessage, session);
+            SESSIONS.broadcastMessage(command.getGameID(), notifyMessage, session);
 
         } catch (Exception e) {
             LOGGER.severe("Failed to handle CONNECT command: " + e.getMessage());
@@ -166,12 +166,12 @@ public class WebSocketHandler {
 
             // Create and send LOAD_GAME message to all sessions in the game
             ServerMessage loadGameMessage = new ServerMessage(chessGame);
-            sessions.broadcastMessage(command.getGameID(), loadGameMessage, null);
+            SESSIONS.broadcastMessage(command.getGameID(), loadGameMessage, null);
 
             // Create and send a notification message about the move
             ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                     "Move made: " + move);
-            sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
+            SESSIONS.broadcastMessage(command.getGameID(), notificationMessage, session);
 
         } catch (Exception e) {
             System.err.println("Failed to handle MAKE_MOVE command: " + e.getMessage());
@@ -216,18 +216,18 @@ public class WebSocketHandler {
             gameDAO.updateGame(gameData);
 
             // Remove session from the game
-            sessions.removeSessionFromGame(command.getGameID(), session);
+            SESSIONS.removeSessionFromGame(command.getGameID(), session);
 
             // Create and send notification message
             if (isParticipant) {
                 ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                         playerUsername + " has left the game.");
-                sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
+                SESSIONS.broadcastMessage(command.getGameID(), notificationMessage, session);
             } else {
                 // Observer is leaving the game, only send a notification to remaining participants
                 ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                         playerUsername + " is no longer observing the game.");
-                sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
+                SESSIONS.broadcastMessage(command.getGameID(), notificationMessage, session);
             }
 
         } catch (Exception e) {
@@ -295,7 +295,7 @@ public class WebSocketHandler {
             // Broadcast the resignation message to all users
             ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                     resignationMessage);
-            sessions.broadcastMessage(command.getGameID(), notificationMessage, null);
+            SESSIONS.broadcastMessage(command.getGameID(), notificationMessage, null);
 
         } catch (Exception e) {
             System.err.println("Failed to handle RESIGN command: " + e.getMessage());
@@ -308,7 +308,7 @@ public class WebSocketHandler {
     private void sendErrorMessage(Session session, String errorMessage) {
         try {
             ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage);
-            sessions.sendMessage(session, error);
+            SESSIONS.sendMessage(session, error);
         } catch (IOException e) {
             LOGGER.severe("Failed to send error message: " + e.getMessage());
         }
