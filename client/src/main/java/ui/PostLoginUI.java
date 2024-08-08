@@ -135,7 +135,7 @@ public class PostLoginUI {
             System.out.println("Joined game successfully!");
 
             WSClient wsClient = new WSClient("localhost", 8080);
-            wsClient.connectAsPlayer(authData.getAuthToken(), game.getGameID());
+            wsClient.connectAsPlayer(authData.getAuthToken(), game.getGameID(), null);
 
             ChessBoard board = new ChessBoard();
             board.resetBoard();
@@ -165,7 +165,7 @@ public class PostLoginUI {
             System.out.println("Observing game: " + game.getGameName());
 
             WSClient wsClient = new WSClient("localhost", 8080);
-            wsClient.connectAsObserver(authData.getAuthToken(), game.getGameID());
+            wsClient.connectAsObserver(authData.getAuthToken(), game.getGameID(), null);
 
             ChessBoard board = new ChessBoard();
             board.resetBoard();

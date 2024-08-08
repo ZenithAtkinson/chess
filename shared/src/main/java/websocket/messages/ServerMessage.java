@@ -9,7 +9,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you should not alter the existing
  * methods.
  */
-//Needs to implement 3 main server messages: Load game, error, and notificatoin (see specs for details)
+// Needs to implement 3 main server messages: Load game, error, and notification (see specs for details)
 public class ServerMessage {
     ServerMessageType serverMessageType;
     private ChessGame game;
@@ -26,6 +26,18 @@ public class ServerMessage {
     public ServerMessage(ChessGame game) {
         this.serverMessageType = ServerMessageType.LOAD_GAME;
         this.game = game;
+        System.out.println("Created LOAD_GAME ServerMessage with game: " + game);
+    }
+
+    // Constructor for ERROR and NOTIFICATION messages
+    public ServerMessage(ServerMessageType valtype, String message) {
+        this.serverMessageType = valtype;
+        switch (valtype) {
+            case NOTIFICATION -> this.message = message;
+            case ERROR -> this.errorMessage = message;
+            default -> throw new IllegalArgumentException("Incorrect variable type");
+        }
+        System.out.println("Created " + valtype + " ServerMessage with message: " + message);
     }
 
     public ServerMessageType getServerMessageType() {
@@ -44,16 +56,6 @@ public class ServerMessage {
         return errorMessage;
     }
 
-    //error and notifications
-    public ServerMessage(ServerMessageType valtype, String message) {
-        this.serverMessageType = valtype;
-        switch (valtype) {
-            case NOTIFICATION -> this.message = message;
-            case ERROR -> this.errorMessage = message;
-            default -> throw new IllegalArgumentException("Incorrect variable type");
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -67,6 +69,4 @@ public class ServerMessage {
     public int hashCode() {
         return Objects.hash(getServerMessageType());
     }
-
-
 }

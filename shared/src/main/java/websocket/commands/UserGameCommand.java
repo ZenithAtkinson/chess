@@ -35,9 +35,11 @@ public class UserGameCommand {
 
     private final Integer gameID;
 
-    private final ChessMove move;
+    private final ChessMove move; //added
 
     private final String username; //Added username field
+
+    private boolean active; //added
 
     public UserGameCommand(CommandType commandType, String authToken, Integer gameID, ChessMove move, String username) {
         this.commandType = commandType;
@@ -45,6 +47,7 @@ public class UserGameCommand {
         this.gameID = gameID;
         this.move = move;
         this.username = username;
+        this.active = active;
     }
 
     public enum CommandType {
@@ -72,6 +75,15 @@ public class UserGameCommand {
 
     public ChessMove getMove() {
         return move;
+    }
+
+    //getters and setters for the active field
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @Override

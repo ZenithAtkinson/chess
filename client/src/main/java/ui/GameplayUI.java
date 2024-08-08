@@ -50,7 +50,7 @@ public class GameplayUI {
                     break;
                 case "resign":
                     resignGame();
-                    break;
+                    return;
                 case "highlight":
                     highlightMoves(scanner);
                     break;
@@ -81,7 +81,7 @@ public class GameplayUI {
 
     private void leaveGame() {
         try {
-            wsClient.leave(authToken, gameId);
+            wsClient.leave(authToken, gameId, null);
             System.out.println("You have left the game.");
         } catch (Exception e) {
             System.out.println("Failed to leave the game: " + e.getMessage());
@@ -98,7 +98,7 @@ public class GameplayUI {
         String moveInput = scanner.nextLine().trim();
         try {
             ChessMove move = parseMove(moveInput);
-            wsClient.makeMove(authToken, gameId, move);
+            wsClient.makeMove(authToken, gameId, move, null);
             System.out.println("Move made: " + moveInput);
         } catch (Exception e) {
             System.out.println("Invalid move: " + e.getMessage());
@@ -143,7 +143,7 @@ public class GameplayUI {
         }
 
         try {
-            wsClient.resign(authToken, gameId);
+            wsClient.resign(authToken, gameId, null);
             System.out.println("You have resigned from the game.");
         } catch (Exception e) {
             System.out.println("Failed to resign from the game: " + e.getMessage());

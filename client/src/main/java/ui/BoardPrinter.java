@@ -35,7 +35,7 @@ public class BoardPrinter {
     private void printColumnLetters(String order) {
         System.out.print("   ");
         for (char ch : order.toCharArray()) {
-            System.out.print(" " + ch + "  ");
+            System.out.print(" " + ch + " \u2004\u200A"); // added \u2002 as a "half" space, to better align column names.
         }
         System.out.println();
     }

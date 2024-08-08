@@ -1,6 +1,5 @@
 package webclient;
 
-import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import websocket.commands.UserGameCommand;
@@ -14,7 +13,7 @@ import java.net.URISyntaxException;
 public class WSClient implements MessageHandler.Whole<String> {
 
     private Session session;
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
     public WSClient(String host, int port) throws URISyntaxException, DeploymentException, IOException {
         URI uri = new URI("ws://" + host + ':' + port + "/ws");
@@ -33,7 +32,7 @@ public class WSClient implements MessageHandler.Whole<String> {
 
     @Override
     public void onMessage(String message) {
-        System.out.println("Received: " + message);
+        System.out.println("Received: " + message); // MUST BE REMOVED ***********************
 
         try {
             ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
@@ -56,7 +55,7 @@ public class WSClient implements MessageHandler.Whole<String> {
         }
     }
 
-    private void handleLoadGame(ChessGame game) {
+    private void handleLoadGame(Object game) {
         System.out.println("Loading game...");
         // Add logic to handle loading the game state
     }
@@ -72,7 +71,7 @@ public class WSClient implements MessageHandler.Whole<String> {
     }
 
     public void send(String msg) throws IOException {
-        System.out.println("Sending: " + msg);
+        System.out.println("Sending: " + msg); // MUST BE REMOVED *******************
         session.getBasicRemote().sendText(msg);
     }
 
@@ -81,30 +80,28 @@ public class WSClient implements MessageHandler.Whole<String> {
         session.close();
     }
 
-    public void connectAsPlayer(String authToken, int gameId) throws IOException {
-        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId);
+    public void connectAsPlayer(String authToken, int gameId, String username) throws IOException {
+        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId, null, username);
         send(gson.toJson(command));
     }
 
-    public void connectAsObserver(String authToken, int gameId) throws IOException {
-        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId);
+    public void connectAsObserver(String authToken, int gameId, String username) throws IOException {
+        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId, null, username);
         send(gson.toJson(command));
     }
 
-    public void makeMove(String authToken, int gameId, ChessMove move) throws IOException {
-        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameId);
-        String commandJson = gson.toJson(command);
-        String moveJson = gson.toJson(move);
-        send(commandJson.substring(0, commandJson.length() - 1) + ",\"move\":" + moveJson + "}");
-    }
-
-    public void leave(String authToken, int gameId) throws IOException {
-        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameId);
+    public void makeMove(String authToken, int gameId, ChessMove move, String username) throws IOException {
+        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameId, move, username);
         send(gson.toJson(command));
     }
 
-    public void resign(String authToken, int gameId) throws IOException {
-        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameId);
+    public void leave(String authToken, int gameId, String username) throws IOException {
+        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameId, null, username);
+        send(gson.toJson(command));
+    }
+
+    public void resign(String authToken, int gameId, String username) throws IOException {
+        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameId, null, username);
         send(gson.toJson(command));
     }
 

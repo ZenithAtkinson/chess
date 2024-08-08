@@ -22,12 +22,18 @@ public class Server {
         GameDAO gameDAO = new SQLGameDAO();
         AuthDAO authDAO = new SQLAuthDAO();
 
+        // Register WebSocket handler
+        //WebSocketHandler wsHandler = new WebSocketHandler(userDAO, gameDAO, authDAO);
+        //Spark.webSocket("/ws", wsHandler); // Need to have dependencies passed in (DAO).
+        // 2nd argument needs to be an instance of the websocket handler
+
         //Initialize services
         RegisterService registerService = new RegisterService(userDAO, authDAO);
 
-        // Register WebSocket handler
-        Spark.webSocket("/ws", WebSocketHandler.class); // Need to have dependencies passed in (DAO).
-        // 2nd argument needs to be an instance of the websocket handler
+        // WebSocket handler with a given DAO
+        WebSocketHandler.initialize(gameDAO, authDAO);
+        // Register it
+        Spark.webSocket("/ws", WebSocketHandler.class);
 
         //Register handlers (Should all be the same)
         Spark.post("/user", new RegisterHandler(registerService));

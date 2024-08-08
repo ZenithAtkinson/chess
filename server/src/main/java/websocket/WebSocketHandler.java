@@ -110,50 +110,189 @@ public class WebSocketHandler {
         System.out.println("Handling MAKE_MOVE command for session: " + session + ", command: " + command);
         try {
             GameData gameData = gameDAO.getGame(command.getGameID());
-            if (gameData != null) {
-                ChessGame game = gameData.getChessGame();
-                String currentTurnUsername = game.getTeamTurn() == ChessGame.TeamColor.WHITE
-                        ? gameData.getWhiteUsername() : gameData.getBlackUsername();
-
-                if (!command.getAuthToken().equals(currentTurnUsername)) {
-                    sendErrorMessage(session, "It's not your turn or you are not a participant in this game");
-                    return;
-                }
-
-                try {
-                    game.makeMove(command.getMove());
-                    gameDAO.updateGame(gameData);
-                    ServerMessage loadGameMessage = new ServerMessage(game);
-                    sessions.broadcastMessage(command.getGameID(), loadGameMessage, null);
-                } catch (InvalidMoveException e) {
-                    sendErrorMessage(session, "Invalid move: " + e.getMessage());
-                }
-            } else {
+            if (gameData == null) {
                 sendErrorMessage(session, "Game not found");
+                return;
             }
+
+            ChessGame chessGame = gameData.getChessGame();
+            ChessMove move = command.getMove();
+            if (move == null) {
+                sendErrorMessage(session, "Invalid move");
+                return;
+            }
+
+            // Fetch the username for the auth token
+            String playerUsername = null;
+            for (AuthData authData : authDAO.getAllAuthData()) {
+                if (authData.getAuthToken().equals(command.getAuthToken())) {
+                    playerUsername = authData.getUsername();
+                    break;
+                }
+            }
+
+            if (playerUsername == null) {
+                sendErrorMessage(session, "Invalid auth token.");
+                return;
+            }
+
+            // Check if the player is one of the game's participants and if the game is active
+            if ((!playerUsername.equals(gameData.getWhiteUsername()) && !playerUsername.equals(gameData.getBlackUsername())) ||
+                    gameData.getWhiteUsername() == null || gameData.getBlackUsername() == null) {
+                sendErrorMessage(session, "It's not your turn or the game is over.");
+                return;
+            }
+
+            // Check if it's the player's turn
+            String currentTurnUsername = chessGame.getTeamTurn() == ChessGame.TeamColor.WHITE ? gameData.getWhiteUsername() : gameData.getBlackUsername();
+            if (!playerUsername.equals(currentTurnUsername)) {
+                sendErrorMessage(session, "It's not your turn.");
+                return;
+            }
+
+            // Validate the move
+            try {
+                chessGame.makeMove(move);
+            } catch (InvalidMoveException e) {
+                sendErrorMessage(session, "Invalid move: " + e.getMessage());
+                return;
+            }
+
+            // Update the game state in the DAO
+            gameDAO.updateGame(gameData);
+
+            // Create and send LOAD_GAME message to all sessions in the game
+            ServerMessage loadGameMessage = new ServerMessage(chessGame);
+            sessions.broadcastMessage(command.getGameID(), loadGameMessage, null);
+
+            // Create and send a notification message about the move
+            ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Move made: " + move);
+            sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
+
         } catch (Exception e) {
             System.err.println("Failed to handle MAKE_MOVE command: " + e.getMessage());
             sendErrorMessage(session, "Failed to handle MAKE_MOVE command: " + e.getMessage());
         }
     }
-
-
-
-
     private void handleLeave(Session session, UserGameCommand command) {
         logger.info("Handling LEAVE command for session: " + session + ", command: " + command);
-        sessions.removeSessionFromGame(command.getGameID(), session);
-        ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Player left the game");
         try {
-            sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
-        } catch (IOException e) {
-            logger.severe("Failed to send leave notification: " + e.getMessage());
+            GameData gameData = gameDAO.getGame(command.getGameID());
+            if (gameData == null) {
+                sendErrorMessage(session, "Game not found");
+                return;
+            }
+
+            // Fetch the username for the auth token
+            String playerUsername = null;
+            for (AuthData authData : authDAO.getAllAuthData()) {
+                if (authData.getAuthToken().equals(command.getAuthToken())) {
+                    playerUsername = authData.getUsername();
+                    break;
+                }
+            }
+
+            if (playerUsername == null) {
+                sendErrorMessage(session, "Invalid auth token.");
+                return;
+            }
+
+            // Check if the player is one of the game's participants
+            boolean isParticipant = playerUsername.equals(gameData.getWhiteUsername()) || playerUsername.equals(gameData.getBlackUsername());
+
+            // Remove the player from the game
+            if (playerUsername.equals(gameData.getWhiteUsername())) {
+                gameData.setWhiteUsername(null);
+            } else if (playerUsername.equals(gameData.getBlackUsername())) {
+                gameData.setBlackUsername(null);
+            }
+
+            // Update the game state in the DAO
+            gameDAO.updateGame(gameData);
+
+            // Remove session from the game
+            sessions.removeSessionFromGame(command.getGameID(), session);
+
+            // Create and send notification message
+            if (isParticipant) {
+                ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, playerUsername + " has left the game.");
+                sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
+            } else {
+                // Observer is leaving the game, only send a notification to remaining participants
+                ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, playerUsername + " is no longer observing the game.");
+                sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
+            }
+
+        } catch (Exception e) {
+            logger.severe("Failed to handle LEAVE command: " + e.getMessage());
+            sendErrorMessage(session, "Failed to handle LEAVE command: " + e.getMessage());
         }
     }
 
+
+
     private void handleResign(Session session, UserGameCommand command) {
-        // Implement resign handling logic
+        System.out.println("Handling RESIGN command for session: " + session + ", command: " + command);
+        try {
+            GameData gameData = gameDAO.getGame(command.getGameID());
+            if (gameData == null) {
+                sendErrorMessage(session, "Game not found");
+                return;
+            }
+
+            ChessGame chessGame = gameData.getChessGame();
+
+            // Fetch the username for the auth token
+            String playerUsername = null;
+            for (AuthData authData : authDAO.getAllAuthData()) {
+                if (authData.getAuthToken().equals(command.getAuthToken())) {
+                    playerUsername = authData.getUsername();
+                    break;
+                }
+            }
+
+            if (playerUsername == null) {
+                sendErrorMessage(session, "Invalid auth token.");
+                return;
+            }
+
+            // Check if the player is one of the game's participants
+            if (!playerUsername.equals(gameData.getWhiteUsername()) && !playerUsername.equals(gameData.getBlackUsername())) {
+                sendErrorMessage(session, "You are not a participant in this game.");
+                return;
+            }
+
+            // Check if the game is already over (either player has resigned)
+            if (gameData.getWhiteUsername() == null || gameData.getBlackUsername() == null) {
+                sendErrorMessage(session, "The game is already over.");
+                return;
+            }
+
+            // Remove the player from the game
+            if (playerUsername.equals(gameData.getWhiteUsername())) {
+                gameData.setWhiteUsername(null);
+            } else if (playerUsername.equals(gameData.getBlackUsername())) {
+                gameData.setBlackUsername(null);
+            }
+
+            // Update the game state in the DAO
+            gameDAO.updateGame(gameData);
+
+            // Create a consolidated resignation message
+            String opponentUsername = playerUsername.equals(gameData.getWhiteUsername()) ? gameData.getBlackUsername() : gameData.getWhiteUsername();
+            String resignationMessage = playerUsername + " has resigned. " + (opponentUsername != null ? opponentUsername + " wins!" : "Game over.");
+
+            // Broadcast the resignation message to all users
+            ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, resignationMessage);
+            sessions.broadcastMessage(command.getGameID(), notificationMessage, null);
+
+        } catch (Exception e) {
+            System.err.println("Failed to handle RESIGN command: " + e.getMessage());
+            sendErrorMessage(session, "Failed to handle RESIGN command: " + e.getMessage());
+        }
     }
+
+
 
     private void sendErrorMessage(Session session, String errorMessage) {
         try {
