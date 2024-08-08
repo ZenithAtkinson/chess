@@ -104,12 +104,4 @@ public class WSClient implements MessageHandler.Whole<String> {
         UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameId, null, username);
         send(gson.toJson(command));
     }
-
-    public void onError(Session session, Throwable thr) {
-        System.err.println("WebSocket error: " + thr.getMessage());
-    }
-
-    public void onClose(Session session, CloseReason closeReason) {
-        System.out.println("WebSocket connection closed: " + closeReason.getReasonPhrase());
-    }
 }

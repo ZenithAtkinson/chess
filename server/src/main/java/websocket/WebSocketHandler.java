@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 @WebSocket
 public class WebSocketHandler {
-    private static final Logger logger = Logger.getLogger(WebSocketHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WebSocketHandler.class.getName());
     private static final WebSocketSessions sessions = new WebSocketSessions();
     private static GameDAO gameDAO;
     private static AuthDAO authDAO;
@@ -30,30 +30,30 @@ public class WebSocketHandler {
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        logger.info("WebSocket connection opened: " + session);
+        LOGGER.info("WebSocket connection opened: " + session);
     }
 
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
-        logger.info("WebSocket connection closed: " + session + ", Status: " + statusCode + ", Reason: " + reason);
+        LOGGER.info("WebSocket connection closed: " + session + ", Status: " + statusCode + ", Reason: " + reason);
         sessions.removeSession(session);
     }
 
     @OnWebSocketError
     public void onError(Session session, Throwable error) {
-        logger.severe("WebSocket error: " + error.getMessage());
+        LOGGER.severe("WebSocket error: " + error.getMessage());
     }
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
-        logger.info("Received message: " + message);
+        LOGGER.info("Received message: " + message);
         try {
             Gson gson = new Gson();
             UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
-            logger.info("Parsed command: " + command);
+            LOGGER.info("Parsed command: " + command);
             handleCommand(session, command);
         } catch (Exception e) {
-            logger.severe("Failed to parse command: " + e.getMessage());
+            LOGGER.severe("Failed to parse command: " + e.getMessage());
             sendErrorMessage(session, "Failed to parse command: " + e.getMessage());
         }
     }
@@ -78,7 +78,7 @@ public class WebSocketHandler {
     }
 
     private void handleConnect(Session session, UserGameCommand command) {
-        logger.info("Handling CONNECT command for session: " + session + ", command: " + command);
+        LOGGER.info("Handling CONNECT command for session: " + session + ", command: " + command);
         try {
             AuthData authData = authDAO.getAuthData(command.getAuthToken());
             if (authData == null) {
@@ -94,14 +94,15 @@ public class WebSocketHandler {
 
             sessions.addSessionToGame(command.getGameID(), session);
             ServerMessage loadGameMessage = new ServerMessage(gameData.getChessGame());
-            logger.info("Sending LOAD_GAME message: " + loadGameMessage);
+            LOGGER.info("Sending LOAD_GAME message: " + loadGameMessage);
             sessions.sendMessage(session, loadGameMessage);
 
-            ServerMessage notifyMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "User " + authData.getUsername() + " connected");
+            ServerMessage notifyMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                    "User " + authData.getUsername() + " connected");
             sessions.broadcastMessage(command.getGameID(), notifyMessage, session);
 
         } catch (Exception e) {
-            logger.severe("Failed to handle CONNECT command: " + e.getMessage());
+            LOGGER.severe("Failed to handle CONNECT command: " + e.getMessage());
             sendErrorMessage(session, "Failed to handle CONNECT command: " + e.getMessage());
         }
     }
@@ -137,14 +138,16 @@ public class WebSocketHandler {
             }
 
             // Check if the player is one of the game's participants and if the game is active
-            if ((!playerUsername.equals(gameData.getWhiteUsername()) && !playerUsername.equals(gameData.getBlackUsername())) ||
+            if ((!playerUsername.equals(gameData.getWhiteUsername()) && !playerUsername.equals
+                    (gameData.getBlackUsername())) ||
                     gameData.getWhiteUsername() == null || gameData.getBlackUsername() == null) {
                 sendErrorMessage(session, "It's not your turn or the game is over.");
                 return;
             }
 
             // Check if it's the player's turn
-            String currentTurnUsername = chessGame.getTeamTurn() == ChessGame.TeamColor.WHITE ? gameData.getWhiteUsername() : gameData.getBlackUsername();
+            String currentTurnUsername = chessGame.getTeamTurn() == ChessGame.TeamColor.WHITE ?
+                    gameData.getWhiteUsername() : gameData.getBlackUsername();
             if (!playerUsername.equals(currentTurnUsername)) {
                 sendErrorMessage(session, "It's not your turn.");
                 return;
@@ -166,7 +169,8 @@ public class WebSocketHandler {
             sessions.broadcastMessage(command.getGameID(), loadGameMessage, null);
 
             // Create and send a notification message about the move
-            ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Move made: " + move);
+            ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                    "Move made: " + move);
             sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
 
         } catch (Exception e) {
@@ -175,7 +179,7 @@ public class WebSocketHandler {
         }
     }
     private void handleLeave(Session session, UserGameCommand command) {
-        logger.info("Handling LEAVE command for session: " + session + ", command: " + command);
+        LOGGER.info("Handling LEAVE command for session: " + session + ", command: " + command);
         try {
             GameData gameData = gameDAO.getGame(command.getGameID());
             if (gameData == null) {
@@ -198,7 +202,8 @@ public class WebSocketHandler {
             }
 
             // Check if the player is one of the game's participants
-            boolean isParticipant = playerUsername.equals(gameData.getWhiteUsername()) || playerUsername.equals(gameData.getBlackUsername());
+            boolean isParticipant = playerUsername.equals(gameData.getWhiteUsername()) || playerUsername.equals
+                    (gameData.getBlackUsername());
 
             // Remove the player from the game
             if (playerUsername.equals(gameData.getWhiteUsername())) {
@@ -215,16 +220,18 @@ public class WebSocketHandler {
 
             // Create and send notification message
             if (isParticipant) {
-                ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, playerUsername + " has left the game.");
+                ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        playerUsername + " has left the game.");
                 sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
             } else {
                 // Observer is leaving the game, only send a notification to remaining participants
-                ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, playerUsername + " is no longer observing the game.");
+                ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        playerUsername + " is no longer observing the game.");
                 sessions.broadcastMessage(command.getGameID(), notificationMessage, session);
             }
 
         } catch (Exception e) {
-            logger.severe("Failed to handle LEAVE command: " + e.getMessage());
+            LOGGER.severe("Failed to handle LEAVE command: " + e.getMessage());
             sendErrorMessage(session, "Failed to handle LEAVE command: " + e.getMessage());
         }
     }
@@ -257,7 +264,8 @@ public class WebSocketHandler {
             }
 
             // Check if the player is one of the game's participants
-            if (!playerUsername.equals(gameData.getWhiteUsername()) && !playerUsername.equals(gameData.getBlackUsername())) {
+            if (!playerUsername.equals(gameData.getWhiteUsername()) && !playerUsername.equals
+                    (gameData.getBlackUsername())) {
                 sendErrorMessage(session, "You are not a participant in this game.");
                 return;
             }
@@ -279,11 +287,14 @@ public class WebSocketHandler {
             gameDAO.updateGame(gameData);
 
             // Create a consolidated resignation message
-            String opponentUsername = playerUsername.equals(gameData.getWhiteUsername()) ? gameData.getBlackUsername() : gameData.getWhiteUsername();
-            String resignationMessage = playerUsername + " has resigned. " + (opponentUsername != null ? opponentUsername + " wins!" : "Game over.");
+            String opponentUsername = playerUsername.equals(gameData.getWhiteUsername()) ? gameData.getBlackUsername() :
+                    gameData.getWhiteUsername();
+            String resignationMessage = playerUsername + " has resigned. " + (opponentUsername != null ?
+                    opponentUsername + " wins!" : "Game over.");
 
             // Broadcast the resignation message to all users
-            ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, resignationMessage);
+            ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                    resignationMessage);
             sessions.broadcastMessage(command.getGameID(), notificationMessage, null);
 
         } catch (Exception e) {
@@ -299,7 +310,7 @@ public class WebSocketHandler {
             ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage);
             sessions.sendMessage(session, error);
         } catch (IOException e) {
-            logger.severe("Failed to send error message: " + e.getMessage());
+            LOGGER.severe("Failed to send error message: " + e.getMessage());
         }
     }
 }
