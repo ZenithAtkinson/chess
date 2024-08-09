@@ -1,10 +1,10 @@
 package ui;
 
-import webclient.WSClient;
 import chess.ChessBoard;
 import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
+import webclient.WSClient;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,8 +19,9 @@ public class GameplayUI {
     private final BoardPrinter boardPrinter;
     private final String authToken;
     private final int gameId;
+    private final String username;
 
-    public GameplayUI(WSClient wsClient, ChessBoard board, boolean isObserver, String userColor, String authToken, int gameId) {
+    public GameplayUI(WSClient wsClient, ChessBoard board, boolean isObserver, String userColor, String authToken, int gameId, String username) {
         this.wsClient = wsClient;
         this.board = board;
         this.isObserver = isObserver;
@@ -28,6 +29,7 @@ public class GameplayUI {
         this.boardPrinter = new BoardPrinter();
         this.authToken = authToken;
         this.gameId = gameId;
+        this.username = username;
     }
 
     public void display() {
@@ -50,7 +52,7 @@ public class GameplayUI {
                     break;
                 case "resign":
                     resignGame();
-                    return;
+                    break;
                 case "highlight":
                     highlightMoves(scanner);
                     break;
@@ -81,7 +83,7 @@ public class GameplayUI {
 
     private void leaveGame() {
         try {
-            wsClient.leave(authToken, gameId, null);
+            wsClient.leave(authToken, gameId, username);
             System.out.println("You have left the game.");
         } catch (Exception e) {
             System.out.println("Failed to leave the game: " + e.getMessage());
@@ -98,7 +100,7 @@ public class GameplayUI {
         String moveInput = scanner.nextLine().trim();
         try {
             ChessMove move = parseMove(moveInput);
-            wsClient.makeMove(authToken, gameId, move, null);
+            wsClient.makeMove(authToken, gameId, move, username);
             System.out.println("Move made: " + moveInput);
         } catch (Exception e) {
             System.out.println("Invalid move: " + e.getMessage());
@@ -142,8 +144,17 @@ public class GameplayUI {
             return;
         }
 
+        System.out.print("Are you sure you want to resign? (yes/no): ");
+        Scanner scanner = new Scanner(System.in);
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+
+        if (!confirmation.equals("yes")) {
+            System.out.println("Resignation canceled.");
+            return;
+        }
+
         try {
-            wsClient.resign(authToken, gameId, null);
+            wsClient.resign(authToken, gameId, username);
             System.out.println("You have resigned from the game.");
         } catch (Exception e) {
             System.out.println("Failed to resign from the game: " + e.getMessage());

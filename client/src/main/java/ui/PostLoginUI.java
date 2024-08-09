@@ -14,12 +14,11 @@ import webclient.WSClient;
 public class PostLoginUI {
     private final ServerFacade serverFacade;
     private final AuthData authData;
-    private final BoardPrinter boardPrinter;
 
     public PostLoginUI(ServerFacade serverFacade, AuthData authData) {
         this.serverFacade = serverFacade;
         this.authData = authData;
-        this.boardPrinter = new BoardPrinter();
+        BoardPrinter boardPrinter = new BoardPrinter();
     }
 
     public void display() {
@@ -139,7 +138,7 @@ public class PostLoginUI {
 
             ChessBoard board = new ChessBoard();
             board.resetBoard();
-            GameplayUI gameplayUI = new GameplayUI(wsClient, board, false, color, authData.getAuthToken(), game.getGameID());
+            GameplayUI gameplayUI = new GameplayUI(wsClient, board, false, color, authData.getAuthToken(), game.getGameID(), authData.getUsername());
             gameplayUI.display();
 
         } catch (NumberFormatException e) {
@@ -169,7 +168,7 @@ public class PostLoginUI {
 
             ChessBoard board = new ChessBoard();
             board.resetBoard();
-            GameplayUI gameplayUI = new GameplayUI(wsClient, board, true, "", authData.getAuthToken(), game.getGameID());
+            GameplayUI gameplayUI = new GameplayUI(wsClient, board, true, "", authData.getAuthToken(), game.getGameID(), authData.getUsername());
             gameplayUI.display();
 
         } catch (NumberFormatException e) {
