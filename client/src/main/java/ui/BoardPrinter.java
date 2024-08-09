@@ -14,18 +14,18 @@ public class BoardPrinter {
     private static final Map<String, String> PIECE_SYMBOLS = new HashMap<>();
 
     static {
-        PIECE_SYMBOLS.put("WHITE_PAWN", EscapeSequences.SET_TEXT_COLOR_RED + " ♙ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("WHITE_ROOK", EscapeSequences.SET_TEXT_COLOR_RED + " ♖ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("WHITE_KNIGHT", EscapeSequences.SET_TEXT_COLOR_RED + " ♘ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("WHITE_BISHOP", EscapeSequences.SET_TEXT_COLOR_RED + " ♗ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("WHITE_QUEEN", EscapeSequences.SET_TEXT_COLOR_RED + " ♕ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("WHITE_KING", EscapeSequences.SET_TEXT_COLOR_RED + " ♔ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("BLACK_PAWN", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♟ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("BLACK_ROOK", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♜ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("BLACK_KNIGHT", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♞ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("BLACK_BISHOP", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♝ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("BLACK_QUEEN", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♛ " + EscapeSequences.RESET_TEXT_COLOR);
-        PIECE_SYMBOLS.put("BLACK_KING", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♚ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("BLACK_PAWN", EscapeSequences.SET_TEXT_COLOR_RED + " ♙ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("BLACK_ROOK", EscapeSequences.SET_TEXT_COLOR_RED + " ♖ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("BLACK_KNIGHT", EscapeSequences.SET_TEXT_COLOR_RED + " ♘ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("BLACK_BISHOP", EscapeSequences.SET_TEXT_COLOR_RED + " ♗ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("BLACK_QUEEN", EscapeSequences.SET_TEXT_COLOR_RED + " ♕ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("BLACK_KING", EscapeSequences.SET_TEXT_COLOR_RED + " ♔ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("WHITE_PAWN", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♟ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("WHITE_ROOK", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♜ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("WHITE_KNIGHT", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♞ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("WHITE_BISHOP", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♝ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("WHITE_QUEEN", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♛ " + EscapeSequences.RESET_TEXT_COLOR);
+        PIECE_SYMBOLS.put("WHITE_KING", EscapeSequences.SET_TEXT_COLOR_BLUE + " ♚ " + EscapeSequences.RESET_TEXT_COLOR);
     }
 
     private void printRowNumbers(int row) {

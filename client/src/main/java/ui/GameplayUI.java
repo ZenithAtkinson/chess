@@ -1,10 +1,10 @@
 package ui;
 
+import webclient.WSClient;
 import chess.ChessBoard;
 import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
-import webclient.WSClient;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class GameplayUI {
     private final WSClient wsClient;
-    private final ChessBoard board;
+    private ChessBoard board;
     private final boolean isObserver;
     private final String userColor;
     private final BoardPrinter boardPrinter;
@@ -57,24 +57,24 @@ public class GameplayUI {
                     highlightMoves(scanner);
                     break;
                 default:
-                    System.out.println("Unknown command. Type 'Help' for a list of commands.");
+                    wsClient.handleNotification("Unknown command. Type 'Help' for a list of commands.");
                     break;
             }
         }
     }
 
     private void displayHelp() {
-        System.out.println("Available commands:");
-        System.out.println("Help - Displays this help message.");
-        System.out.println("Redraw - Redraws the chess board.");
-        System.out.println("Leave - Leaves the game and returns to the Post-Login UI.");
-        System.out.println("Make Move - Prompts for and makes a move.");
-        System.out.println("Resign - Resigns from the game.");
-        System.out.println("Highlight - Highlights legal moves for a piece.");
+        wsClient.handleNotification("Available commands:\n" +
+                "Help - Displays this help message.\n" +
+                "Redraw - Redraws the chess board.\n" +
+                "Leave - Leaves the game and returns to the Post-Login UI.\n" +
+                "Make Move - Prompts for and makes a move.\n" +
+                "Resign - Resigns from the game.\n" +
+                "Highlight - Highlights legal moves for a piece.");
     }
 
-    private void redrawBoard() {
-        if (userColor.equals("WHITE")) {
+    void redrawBoard() {
+        if (userColor.equals("WHITE") || isObserver) {
             boardPrinter.printBoard(board);
         } else {
             boardPrinter.printBoardReversed(board);
@@ -84,15 +84,15 @@ public class GameplayUI {
     private void leaveGame() {
         try {
             wsClient.leave(authToken, gameId, username);
-            System.out.println("You have left the game.");
+            wsClient.handleNotification("You have left the game.");
         } catch (Exception e) {
-            System.out.println("Failed to leave the game: " + e.getMessage());
+            wsClient.handleError("Failed to leave the game: " + e.getMessage());
         }
     }
 
     private void makeMove(Scanner scanner) {
         if (isObserver) {
-            System.out.println("Observers cannot make moves.");
+            wsClient.handleNotification("Observers cannot make moves.");
             return;
         }
 
@@ -101,9 +101,9 @@ public class GameplayUI {
         try {
             ChessMove move = parseMove(moveInput);
             wsClient.makeMove(authToken, gameId, move, username);
-            System.out.println("Move made: " + moveInput);
+            wsClient.handleNotification(username + " made a move: " + moveInput);
         } catch (Exception e) {
-            System.out.println("Invalid move: " + e.getMessage());
+            wsClient.handleError("Invalid move: " + e.getMessage());
         }
     }
 
@@ -140,24 +140,15 @@ public class GameplayUI {
 
     private void resignGame() {
         if (isObserver) {
-            System.out.println("Observers cannot resign the game.");
-            return;
-        }
-
-        System.out.print("Are you sure you want to resign? (yes/no): ");
-        Scanner scanner = new Scanner(System.in);
-        String confirmation = scanner.nextLine().trim().toLowerCase();
-
-        if (!confirmation.equals("yes")) {
-            System.out.println("Resignation canceled.");
+            wsClient.handleNotification("Observers cannot resign the game.");
             return;
         }
 
         try {
             wsClient.resign(authToken, gameId, username);
-            System.out.println("You have resigned from the game.");
+            wsClient.handleNotification(username + " has resigned from the game.");
         } catch (Exception e) {
-            System.out.println("Failed to resign from the game: " + e.getMessage());
+            wsClient.handleError("Failed to resign from the game: " + e.getMessage());
         }
     }
 
@@ -168,14 +159,14 @@ public class GameplayUI {
             ChessPosition position = parsePosition(pos);
             highlightLegalMoves(position);
         } catch (Exception e) {
-            System.out.println("Invalid position: " + e.getMessage());
+            wsClient.handleError("Invalid position: " + e.getMessage());
         }
     }
 
     private void highlightLegalMoves(ChessPosition position) {
         ChessPiece piece = board.getPiece(position);
         if (piece == null) {
-            System.out.println("No piece at the given position.");
+            wsClient.handleError("No piece at the given position.");
             return;
         }
 
@@ -184,10 +175,15 @@ public class GameplayUI {
                 .map(ChessMove::getEndPosition)
                 .collect(Collectors.toList());
 
-        if (userColor.equals("WHITE")) {
+        if (userColor.equals("WHITE") || isObserver) {
             boardPrinter.printBoardWithHighlights(board, legalPositions);
         } else {
             boardPrinter.printBoardReversedWithHighlights(board, legalPositions);
         }
+    }
+
+    public void updateBoard(ChessBoard newBoard) {
+        this.board = newBoard;
+        redrawBoard();
     }
 }

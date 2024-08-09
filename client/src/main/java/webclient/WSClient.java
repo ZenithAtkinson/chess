@@ -16,7 +16,7 @@ public class WSClient implements MessageHandler.Whole<String> {
 
     private Session session;
     private final Gson gson = new Gson();
-    private ChessBoard board;
+    private ChessBoard board; // Holds the current state of the board
 
     public WSClient(String host, int port) throws URISyntaxException, DeploymentException, IOException {
         URI uri = new URI("ws://" + host + ':' + port + "/ws");
@@ -59,7 +59,17 @@ public class WSClient implements MessageHandler.Whole<String> {
     private void handleLoadGame(ChessBoard gameBoard) {
         // Update the local chess board with the game state received from the server
         this.board = gameBoard;
+        redrawBoard(); // Call to redraw the board
         System.out.println("Game loaded successfully.");
+    }
+
+    public void redrawBoard() {
+        if (this.board != null) {
+            // Logic to redraw the board based on the current state
+            // You can print the board or pass it to a UI component for rendering
+            System.out.println("Redrawing board...");
+            // Implement board drawing logic here, e.g., System.out.println(this.board);
+        }
     }
 
     public void handleError(String errorMessage) {

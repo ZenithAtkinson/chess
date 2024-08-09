@@ -124,14 +124,19 @@ public class WebSocketHandler {
                 return;
             }
 
-            // Fetch the username for the auth token
             String playerUsername = getUsernameFromAuthToken(command.getAuthToken());
             if (playerUsername == null) {
                 sendErrorMessage(session, "Invalid auth token.");
                 return;
             }
 
-            // Ensure the player is still part of the game and that the game is active
+            // Check if the game has two active players
+            if (gameData.getWhiteUsername() == null || gameData.getBlackUsername() == null) {
+                sendErrorMessage(session, "Waiting for both players to join.");
+                return;
+            }
+
+            // Ensure the player is part of the game and that the game is not over
             if (!isPlayerInGame(gameData, playerUsername)) {
                 sendErrorMessage(session, "You are not a participant in this game or the game is over.");
                 return;

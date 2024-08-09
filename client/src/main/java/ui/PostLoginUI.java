@@ -18,7 +18,6 @@ public class PostLoginUI {
     public PostLoginUI(ServerFacade serverFacade, AuthData authData) {
         this.serverFacade = serverFacade;
         this.authData = authData;
-        BoardPrinter boardPrinter = new BoardPrinter();
     }
 
     public void display() {
@@ -134,11 +133,12 @@ public class PostLoginUI {
             System.out.println("Joined game successfully!");
 
             WSClient wsClient = new WSClient("localhost", 8080);
-            wsClient.connectAsPlayer(authData.getAuthToken(), game.getGameID(), null);
+            wsClient.connectAsPlayer(authData.getAuthToken(), game.getGameID(), color);
 
             ChessBoard board = new ChessBoard();
             board.resetBoard();
             GameplayUI gameplayUI = new GameplayUI(wsClient, board, false, color, authData.getAuthToken(), game.getGameID(), authData.getUsername());
+            gameplayUI.redrawBoard();
             gameplayUI.display();
 
         } catch (NumberFormatException e) {
@@ -164,12 +164,13 @@ public class PostLoginUI {
             System.out.println("Observing game: " + game.getGameName());
 
             WSClient wsClient = new WSClient("localhost", 8080);
-            wsClient.connectAsObserver(authData.getAuthToken(), game.getGameID(), null);
+            wsClient.connectAsObserver(authData.getAuthToken(), game.getGameID(), authData.getUsername());
 
             ChessBoard board = new ChessBoard();
             board.resetBoard();
             GameplayUI gameplayUI = new GameplayUI(wsClient, board, true, "", authData.getAuthToken(), game.getGameID(), authData.getUsername());
             gameplayUI.display();
+            gameplayUI.redrawBoard();
 
         } catch (NumberFormatException e) {
             System.out.println("Invalid game number. Please enter a valid number.");
