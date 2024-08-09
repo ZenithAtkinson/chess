@@ -1,6 +1,8 @@
 package webclient;
 
+import chess.ChessBoard;
 import chess.ChessMove;
+import chess.ChessPiece;
 import com.google.gson.Gson;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
@@ -14,6 +16,7 @@ public class WSClient implements MessageHandler.Whole<String> {
 
     private Session session;
     private final Gson gson = new Gson();
+    private ChessBoard board;
 
     public WSClient(String host, int port) throws URISyntaxException, DeploymentException, IOException {
         URI uri = new URI("ws://" + host + ':' + port + "/ws");
@@ -21,25 +24,23 @@ public class WSClient implements MessageHandler.Whole<String> {
         session = ContainerProvider.getWebSocketContainer().connectToServer(new Endpoint() {
             @Override
             public void onOpen(Session session, EndpointConfig endpointConfig) {
-                //System.out.println("WebSocket connection opened.");
+                // Connection opened
             }
         }, uri);
 
         session.addMessageHandler(this);
 
-        //System.out.println("WebSocket connection established.");
+        // WebSocket connection established
     }
 
     @Override
     public void onMessage(String message) {
-        //System.out.println("Received: " + message); // MUST BE REMOVED ***********************
-
         try {
             ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
 
             switch (serverMessage.getServerMessageType()) {
                 case LOAD_GAME:
-                    handleLoadGame(serverMessage.getGame());
+                    handleLoadGame(serverMessage.getGame().getBoard());
                     break;
                 case ERROR:
                     handleError(serverMessage.getErrorMessage());
@@ -55,30 +56,27 @@ public class WSClient implements MessageHandler.Whole<String> {
         }
     }
 
-    private void handleLoadGame(Object game) {
-        System.out.println("Loading game...");
-        // Add logic to handle loading the game state
+    private void handleLoadGame(ChessBoard gameBoard) {
+        // Update the local chess board with the game state received from the server
+        this.board = gameBoard;
+        System.out.println("Game loaded successfully.");
     }
 
-    private void handleError(String errorMessage) {
+    public void handleError(String errorMessage) {
+        // Print the error message received from the server
         System.err.println("Error: " + errorMessage);
-
-        //LOGIC FOR ERRORS
     }
 
-    private void handleNotification(String message) {
-        //System.out.println("Notification: " + message);
-
-        //LOGIC FOR NOTIFICATIONS NEEDS TO BE ADDED STILL
+    public void handleNotification(String message) {
+        // Display the notification message received from the server
+        System.out.println("Notification: " + message);
     }
 
     public void send(String msg) throws IOException {
-        //System.out.println("Sending: " + msg); // MUST BE REMOVED *******************
         session.getBasicRemote().sendText(msg);
     }
 
     public void close() throws IOException {
-        //System.out.println("Closing WebSocket connection.");
         session.close();
     }
 
@@ -87,7 +85,7 @@ public class WSClient implements MessageHandler.Whole<String> {
         send(gson.toJson(command));
     }
 
-    public void connectAsObserver(String authToken, int gameId, String username) throws IOException { // Does this need to be changed?
+    public void connectAsObserver(String authToken, int gameId, String username) throws IOException {
         connectAsPlayer(authToken, gameId, username);
     }
 

@@ -4,6 +4,7 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import websocket.commands.UserGameCommand;
@@ -124,36 +125,26 @@ public class WebSocketHandler {
             }
 
             // Fetch the username for the auth token
-            String playerUsername = null;
-            for (AuthData authData : authDAO.getAllAuthData()) {
-                if (authData.getAuthToken().equals(command.getAuthToken())) {
-                    playerUsername = authData.getUsername();
-                    break;
-                }
-            }
-
+            String playerUsername = getUsernameFromAuthToken(command.getAuthToken());
             if (playerUsername == null) {
                 sendErrorMessage(session, "Invalid auth token.");
                 return;
             }
 
-            // Check if the player is one of the game's participants and if the game is active
-            if ((!playerUsername.equals(gameData.getWhiteUsername()) && !playerUsername.equals
-                    (gameData.getBlackUsername())) ||
-                    gameData.getWhiteUsername() == null || gameData.getBlackUsername() == null) {
-                sendErrorMessage(session, "It's not your turn or the game is over.");
+            // Ensure the player is still part of the game and that the game is active
+            if (!isPlayerInGame(gameData, playerUsername)) {
+                sendErrorMessage(session, "You are not a participant in this game or the game is over.");
                 return;
             }
 
             // Check if it's the player's turn
-            String currentTurnUsername = chessGame.getTeamTurn() == ChessGame.TeamColor.WHITE ?
-                    gameData.getWhiteUsername() : gameData.getBlackUsername();
+            String currentTurnUsername = getCurrentTurnUsername(chessGame, gameData);
             if (!playerUsername.equals(currentTurnUsername)) {
                 sendErrorMessage(session, "It's not your turn.");
                 return;
             }
 
-            // Validate the move
+            // Validate and perform the move
             try {
                 chessGame.makeMove(move);
             } catch (InvalidMoveException e) {
@@ -161,16 +152,16 @@ public class WebSocketHandler {
                 return;
             }
 
-            // Update the game state in the DAO
+            // Update the game state
             gameDAO.updateGame(gameData);
 
-            // Create and send LOAD_GAME message to all sessions in the game
+            // Broadcast the updated game state
             ServerMessage loadGameMessage = new ServerMessage(chessGame);
             SESSIONS.broadcastMessage(command.getGameID(), loadGameMessage, null);
 
-            // Create and send a notification message about the move
+            // Notify about the move
             ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                    "Move made: " + move);
+                    playerUsername + " made a move: " + move);
             SESSIONS.broadcastMessage(command.getGameID(), notificationMessage, session);
 
         } catch (Exception e) {
@@ -178,6 +169,26 @@ public class WebSocketHandler {
             sendErrorMessage(session, "Failed to handle MAKE_MOVE command: " + e.getMessage());
         }
     }
+
+    private String getUsernameFromAuthToken(String authToken) throws DataAccessException {
+        for (AuthData authData : authDAO.getAllAuthData()) {
+            if (authData.getAuthToken().equals(authToken)) {
+                return authData.getUsername();
+            }
+        }
+        return null;
+    }
+
+    private boolean isPlayerInGame(GameData gameData, String username) {
+        return (username.equals(gameData.getWhiteUsername()) || username.equals(gameData.getBlackUsername()))
+                && gameData.getWhiteUsername() != null || gameData.getBlackUsername() != null;
+    }
+
+    private String getCurrentTurnUsername(ChessGame chessGame, GameData gameData) {
+        return chessGame.getTeamTurn() == ChessGame.TeamColor.WHITE ? gameData.getWhiteUsername() : gameData.getBlackUsername();
+    }
+
+
     private void handleLeave(Session session, UserGameCommand command) {
         LOGGER.info("Handling LEAVE command for session: " + session + ", command: " + command);
         try {
@@ -228,6 +239,17 @@ public class WebSocketHandler {
                 ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                         playerUsername + " is no longer observing the game.");
                 SESSIONS.broadcastMessage(command.getGameID(), notificationMessage, session);
+            }
+
+            if (playerUsername.equals(gameData.getWhiteUsername())) {
+                gameData.setWhiteUsername(null);
+            } else if (playerUsername.equals(gameData.getBlackUsername())) {
+                gameData.setBlackUsername(null);
+            }
+
+            // If both players have left, remove the game
+            if (gameData.getWhiteUsername() == null && gameData.getBlackUsername() == null) {
+                gameDAO.deleteGame(command.getGameID()); // Delete the game from the data store
             }
 
         } catch (Exception e) {
@@ -283,10 +305,10 @@ public class WebSocketHandler {
                 gameData.setBlackUsername(null);
             }
 
-            // Update the game state in the DAO
+            // Update the game state DAO
             gameDAO.updateGame(gameData);
 
-            // Create a consolidated resignation message
+
             String opponentUsername = playerUsername.equals(gameData.getWhiteUsername()) ? gameData.getBlackUsername() :
                     gameData.getWhiteUsername();
             String resignationMessage = playerUsername + " has resigned. " + (opponentUsername != null ?
@@ -296,6 +318,17 @@ public class WebSocketHandler {
             ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                     resignationMessage);
             SESSIONS.broadcastMessage(command.getGameID(), notificationMessage, null);
+
+            if (playerUsername.equals(gameData.getWhiteUsername())) {
+                gameData.setWhiteUsername(null);
+            } else if (playerUsername.equals(gameData.getBlackUsername())) {
+                gameData.setBlackUsername(null);
+            }
+
+            // If both players have resigned or left, remove the game
+            if (gameData.getWhiteUsername() == null && gameData.getBlackUsername() == null) {
+                gameDAO.deleteGame(command.getGameID()); // Assuming removeGame deletes the game
+            }
 
         } catch (Exception e) {
             System.err.println("Failed to handle RESIGN command: " + e.getMessage());
