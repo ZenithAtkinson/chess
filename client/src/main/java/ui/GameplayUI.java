@@ -181,9 +181,10 @@ public class GameplayUI {
             boardPrinter.printBoardReversedWithHighlights(board, legalPositions);
         }
     }
-
-    public void updateBoard(ChessBoard newBoard) {
-        this.board = newBoard;
-        redrawBoard();
-    }
+    /**
+    * public void updateBoard(ChessBoard newBoard) {
+     *    this.board = newBoard;
+     *    redrawBoard();
+    * }
+     */
 }
