@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+// I Should really go through here and add comments
+
 public class WebSocketSessions {
     private static final Logger LOGGER = Logger.getLogger(WebSocketSessions.class.getName());
     private final Map<Integer, Set<Session>> sessionMap = new ConcurrentHashMap<>();
@@ -19,7 +21,7 @@ public class WebSocketSessions {
     public void addSessionToGame(int gameID, Session session) {
         LOGGER.info("Adding session to gameID: " + gameID + ", session: " + session);
         sessionMap.computeIfAbsent(gameID, k -> Collections.synchronizedSet(new HashSet<>())).add(session);
-        LOGGER.info("Current sessions for gameID " + gameID + ": " + sessionMap.get(gameID));
+        //LOGGER.info("Current sessions for gameID " + gameID + ": " + sessionMap.get(gameID));
     }
 
     public void removeSessionFromGame(int gameID, Session session) {
@@ -30,7 +32,7 @@ public class WebSocketSessions {
                 sessionMap.remove(gameID);
             }
         }
-        LOGGER.info("Current sessions for gameID " + gameID + ": " + sessionMap.getOrDefault(gameID, Collections.emptySet()));
+        //LOGGER.info("Current sessions for gameID " + gameID + ": " + sessionMap.getOrDefault(gameID, Collections.emptySet()));
     }
 
     public Set<Session> getSessionsForGame(int gameID) {

@@ -24,13 +24,13 @@ public class WSClient implements MessageHandler.Whole<String> {
         session = ContainerProvider.getWebSocketContainer().connectToServer(new Endpoint() {
             @Override
             public void onOpen(Session session, EndpointConfig endpointConfig) {
-                // Connection opened
+                //Connection OPEN
             }
         }, uri);
 
         session.addMessageHandler(this);
 
-        // WebSocket connection established
+        // add LOGGER to confirm websocket establishment
     }
 
     @Override
@@ -69,16 +69,17 @@ public class WSClient implements MessageHandler.Whole<String> {
             // You can print the board or pass it to a UI component for rendering
             System.out.println("Redrawing board...");
             // Implement board drawing logic here, e.g., System.out.println(this.board);
+                //confirm with specs
         }
     }
 
     public void handleError(String errorMessage) {
-        // Print the error message received from the server
+        //Print
         System.err.println("Error: " + errorMessage);
     }
 
     public void handleNotification(String message) {
-        // Display the notification message received from the server
+        //Print notif
         System.out.println("Notification: " + message);
     }
 
@@ -87,6 +88,7 @@ public class WSClient implements MessageHandler.Whole<String> {
     }
 
     public void close() throws IOException {
+    // I ned to add this method
         session.close();
     }
 

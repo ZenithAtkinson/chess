@@ -47,14 +47,14 @@ public class WebSocketHandler {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
-        LOGGER.info("Received message: " + message);
+        //LOGGER.info("Received message: " + message);
         try {
             Gson gson = new Gson();
             UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
-            LOGGER.info("Parsed command: " + command);
+            //LOGGER.info("Parsed command: " + command);
             handleCommand(session, command);
         } catch (Exception e) {
-            LOGGER.severe("Failed to parse command: " + e.getMessage());
+            //LOGGER.severe("Failed to parse command: " + e.getMessage());
             sendErrorMessage(session, "Failed to parse command: " + e.getMessage());
         }
     }
@@ -79,7 +79,7 @@ public class WebSocketHandler {
     }
 
     private void handleConnect(Session session, UserGameCommand command) {
-        LOGGER.info("Handling CONNECT command for session: " + session + ", command: " + command);
+        //LOGGER.info("Handling CONNECT command for session: " + session + ", command: " + command);
         try {
             AuthData authData = authDAO.getAuthData(command.getAuthToken());
             if (authData == null) {
@@ -95,7 +95,7 @@ public class WebSocketHandler {
 
             SESSIONS.addSessionToGame(command.getGameID(), session);
             ServerMessage loadGameMessage = new ServerMessage(gameData.getChessGame());
-            LOGGER.info("Sending LOAD_GAME message: " + loadGameMessage);
+            //LOGGER.info("Sending LOAD_GAME message: " + loadGameMessage);
             SESSIONS.sendMessage(session, loadGameMessage);
 
             ServerMessage notifyMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
@@ -103,7 +103,7 @@ public class WebSocketHandler {
             SESSIONS.broadcastMessage(command.getGameID(), notifyMessage, session);
 
         } catch (Exception e) {
-            LOGGER.severe("Failed to handle CONNECT command: " + e.getMessage());
+            //LOGGER.severe("Failed to handle CONNECT command: " + e.getMessage());
             sendErrorMessage(session, "Failed to handle CONNECT command: " + e.getMessage());
         }
     }
@@ -142,14 +142,14 @@ public class WebSocketHandler {
                 return;
             }
 
-            // Check if it's the player's turn
+            //check if it's the player's turn
             String currentTurnUsername = getCurrentTurnUsername(chessGame, gameData);
             if (!playerUsername.equals(currentTurnUsername)) {
                 sendErrorMessage(session, "It's not your turn.");
                 return;
             }
 
-            // Validate and perform the move
+            //Validate and perform the move
             try {
                 chessGame.makeMove(move);
             } catch (InvalidMoveException e) {
@@ -195,7 +195,7 @@ public class WebSocketHandler {
 
 
     private void handleLeave(Session session, UserGameCommand command) {
-        LOGGER.info("Handling LEAVE command for session: " + session + ", command: " + command);
+        //LOGGER.info("Handling LEAVE command for session: " + session + ", command: " + command);
         try {
             GameData gameData = gameDAO.getGame(command.getGameID());
             if (gameData == null) {
@@ -234,7 +234,7 @@ public class WebSocketHandler {
             // Remove session from the game
             SESSIONS.removeSessionFromGame(command.getGameID(), session);
 
-            // Create and send notification message
+            // Create and send notification message (double check this is happening)
             if (isParticipant) {
                 ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                         playerUsername + " has left the game.");
@@ -266,7 +266,7 @@ public class WebSocketHandler {
 
 
     private void handleResign(Session session, UserGameCommand command) {
-        System.out.println("Handling RESIGN command for session: " + session + ", command: " + command);
+        //System.out.println("Handling RESIGN command for session: " + session + ", command: " + command);
         try {
             GameData gameData = gameDAO.getGame(command.getGameID());
             if (gameData == null) {
@@ -319,7 +319,7 @@ public class WebSocketHandler {
             String resignationMessage = playerUsername + " has resigned. " + (opponentUsername != null ?
                     opponentUsername + " wins!" : "Game over.");
 
-            // Broadcast the resignation message to all users
+            // Broadcast the resignation message to all users (double check with logger)
             ServerMessage notificationMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                     resignationMessage);
             SESSIONS.broadcastMessage(command.getGameID(), notificationMessage, null);
@@ -332,11 +332,11 @@ public class WebSocketHandler {
 
             // If both players have resigned or left, remove the game
             if (gameData.getWhiteUsername() == null && gameData.getBlackUsername() == null) {
-                gameDAO.deleteGame(command.getGameID()); // Assuming removeGame deletes the game
+                gameDAO.deleteGame(command.getGameID());
             }
 
         } catch (Exception e) {
-            System.err.println("Failed to handle RESIGN command: " + e.getMessage());
+            //System.err.println("Failed to handle RESIGN command: " + e.getMessage());
             sendErrorMessage(session, "Failed to handle RESIGN command: " + e.getMessage());
         }
     }
@@ -348,7 +348,7 @@ public class WebSocketHandler {
             ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage);
             SESSIONS.sendMessage(session, error);
         } catch (IOException e) {
-            LOGGER.severe("Failed to send error message: " + e.getMessage());
+            //LOGGER.severe("Failed to send error message: " + e.getMessage());
         }
     }
 }
